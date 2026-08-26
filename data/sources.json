@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-08-24",
+  "description": "Реестр источников, используемых СТАС. Источник не является автоматически доказательством конкретного значения спортивного профиля: каждое утверждение должно быть связано с конкретным источником.",
+  "sources": [
+    {
+      "id": "langepas_sport_official",
+      "title": "ЛГ МАУ «Лангепас-Спорт»",
+      "type": "official_local",
+      "authority": "ЛГ МАУ «Лангепас-Спорт»",
+      "url": "https://langepas-sport.github.io/",
+      "scope": "Спортивные объекты, направления, мероприятия и доступность спортивной инфраструктуры Лангепаса.",
+      "checked_at": "2026-08-24",
+      "reliability": "high",
+      "use_for": [
+        "langepas_availability",
+        "facilities",
+        "local_events"
+      ]
+    },
+    {
+      "id": "minsport_rules",
+      "title": "Правила видов спорта",
+      "type": "official_federal",
+      "authority": "Министерство спорта Российской Федерации",
+      "url": "https://minsport.gov.ru/activity/government-regulation/pravila-vidov-sporta/pravila-vidov-sporta-1/",
+      "scope": "Официальные правила видов спорта и нормативные документы.",
+      "checked_at": "2026-08-24",
+      "reliability": "high",
+      "use_for": [
+        "sport_rules",
+        "sport_identity"
+      ]
+    },
+    {
+      "id": "minsport_fssp",
+      "title": "Федеральные стандарты спортивной подготовки по видам спорта",
+      "type": "official_federal",
+      "authority": "Министерство спорта Российской Федерации",
+      "url": "https://minsport.gov.ru/federalnye-standarty-sportivnoj-podgotovki-po-vidam-sporta-127fs/",
+      "scope": "Федеральные стандарты спортивной подготовки по видам спорта.",
+      "checked_at": "2026-08-24",
+      "reliability": "high",
+      "use_for": [
+        "fssp",
+        "training_requirements",
+        "age_groups"
+      ]
+    },
+    {
+      "id": "minsport_evsk_2026_2029",
+      "title": "ЕВСК 2026–2029",
+      "type": "official_federal",
+      "authority": "Министерство спорта Российской Федерации",
+      "url": "https://minsport.gov.ru/activity/government-regulation/evsk-2026-2029/",
+      "scope": "Единая всероссийская спортивная классификация и нормы, требования и условия их выполнения.",
+      "checked_at": "2026-08-24",
+      "reliability": "high",
+      "use_for": [
+        "sports_classification",
+        "sport_requirements"
+      ]
+    },
+    {
+      "id": "federal_law_329",
+      "title": "Федеральный закон № 329-ФЗ «О физической культуре и спорте в Российской Федерации» — глава 4",
+      "type": "official_federal",
+      "authority": "Министерство спорта Российской Федерации / официальный текст",
+      "url": "https://storage.minsport.gov.ru/cms-uploads/cms/FZ_o_fizkulture_i_sporte_d743846b9e.pdf",
+      "scope": "Этапы спортивной подготовки и федеральные стандарты спортивной подготовки.",
+      "checked_at": "2026-08-24",
+      "reliability": "high",
+      "use_for": [
+        "training_stages",
+        "fssp_framework"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "sports_fssp": [
+    { "id": "acrobatics", "name": "Спортивная акробатика", "age_min": 5, "age_max": 18, "org": "СШОР «Академия спорта»" },
+    { "id": "trampoline", "name": "Прыжки на батуте", "age_min": 5, "age_max": 18, "org": "СШОР «Академия спорта»" },
+    { "id": "rhythmic_gymnastics", "name": "Художественная гимнастика", "age_min": 5, "age_max": 18, "org": "СШ «Дельфин»" },
+    { "id": "swimming", "name": "Плавание", "age_min": 5, "age_max": 18, "org": "СШ «Дельфин»" },
+    { "id": "judo", "name": "Дзюдо", "age_min": 7, "age_max": 18, "org": "СШОР «Академия спорта»" },
+    { "id": "sambo", "name": "Самбо", "age_min": 7, "age_max": 18, "org": "СШОР «Академия спорта»" },
+    { "id": "freestyle_wrestling", "name": "Вольная борьба", "age_min": 7, "age_max": 18, "org": "СШОР «Академия спорта»" },
+    { "id": "cross_country_skiing", "name": "Лыжные гонки", "age_min": 7, "age_max": 18, "org": "СШ «Лангепас»" },
+    { "id": "taekwondo", "name": "Тхэквондо", "age_min": 7, "age_max": 18, "org": "СШ «Лангепас»" },
+    { "id": "chess", "name": "Шахматы", "age_min": 6, "age_max": 18, "org": "СШ «Лангепас»" },
+    { "id": "tennis", "name": "Теннис", "age_min": 6, "age_max": 18, "org": "СШ «Дельфин»" },
+    { "id": "table_tennis", "name": "Настольный теннис", "age_min": 6, "age_max": 18, "org": "СШ «Дельфин»" },
+    { "id": "archery", "name": "Стрельба из лука", "age_min": 8, "age_max": 18, "org": "СШОР «Академия спорта»" },
+    { "id": "basketball", "name": "Баскетбол", "age_min": 8, "age_max": 18, "org": "СШ «Лангепас»" },
+    { "id": "volleyball", "name": "Волейбол", "age_min": 8, "age_max": 18, "org": "СШ «Лангепас»" },
+    { "id": "hockey", "name": "Хоккей", "age_min": 8, "age_max": 18, "org": "СШ «Лангепас»" },
+    { "id": "muaythai", "name": "Муайтай (Тайский бокс)", "age_min": 8, "age_max": 18, "org": "СШ «Лангепас»" },
+    { "id": "boxing", "name": "Бокс", "age_min": 9, "age_max": 18, "org": "СШОР «Академия спорта»" },
+    { "id": "weightlifting", "name": "Тяжёлая атлетика", "age_min": 9, "age_max": 18, "org": "СШОР «Академия спорта»" },
+    { "id": "grappling", "name": "Грэпплинг", "age_min": 10, "age_max": 18, "org": "СШОР «Академия спорта»" },
+    { "id": "mma", "name": "Смешанное боевое единоборство (ММА)", "age_min": 10, "age_max": 18, "org": "СШОР «Академия спорта»" }
+  ]
+}

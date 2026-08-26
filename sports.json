@@ -1,0 +1,204 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-08-24",
+  "description": "Базовый каталог видов спорта СТАС. Профили требований будут заполняться и подтверждаться источниками отдельно.",
+  "scoring_note": "Поля требований намеренно не заполнены на этом этапе: они не должны выдумываться без источников.",
+  "sports": [
+    {
+      "id": "basketball",
+      "name": "Баскетбол",
+      "category": "Игровые",
+      "team": true,
+      "contact": "medium"
+    },
+    {
+      "id": "volleyball",
+      "name": "Волейбол",
+      "category": "Игровые",
+      "team": true,
+      "contact": "low"
+    },
+    {
+      "id": "football",
+      "name": "Футбол",
+      "category": "Игровые",
+      "team": true,
+      "contact": "medium"
+    },
+    {
+      "id": "mini_football",
+      "name": "Мини-футбол",
+      "category": "Игровые",
+      "team": true,
+      "contact": "medium"
+    },
+    {
+      "id": "hockey",
+      "name": "Хоккей",
+      "category": "Игровые",
+      "team": true,
+      "contact": "high"
+    },
+    {
+      "id": "tennis",
+      "name": "Теннис",
+      "category": "Ракеточные",
+      "team": false,
+      "contact": "low"
+    },
+    {
+      "id": "table_tennis",
+      "name": "Настольный теннис",
+      "category": "Ракеточные",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "badminton",
+      "name": "Бадминтон",
+      "category": "Ракеточные",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "judo",
+      "name": "Дзюдо",
+      "category": "Единоборства",
+      "team": false,
+      "contact": "high"
+    },
+    {
+      "id": "sambo",
+      "name": "Самбо",
+      "category": "Единоборства",
+      "team": false,
+      "contact": "high"
+    },
+    {
+      "id": "boxing",
+      "name": "Бокс",
+      "category": "Единоборства",
+      "team": false,
+      "contact": "high"
+    },
+    {
+      "id": "karate",
+      "name": "Каратэ",
+      "category": "Единоборства",
+      "team": false,
+      "contact": "medium"
+    },
+    {
+      "id": "taekwondo",
+      "name": "Тхэквондо",
+      "category": "Единоборства",
+      "team": false,
+      "contact": "medium"
+    },
+    {
+      "id": "swimming",
+      "name": "Плавание",
+      "category": "Циклические",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "athletics",
+      "name": "Лёгкая атлетика",
+      "category": "Циклические",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "cross_country_skiing",
+      "name": "Лыжные гонки",
+      "category": "Циклические",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "cycling",
+      "name": "Велоспорт",
+      "category": "Циклические",
+      "team": false,
+      "contact": "low"
+    },
+    {
+      "id": "orienteering",
+      "name": "Спортивное ориентирование",
+      "category": "Циклические",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "artistic_gymnastics",
+      "name": "Спортивная гимнастика",
+      "category": "Координационные",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "rhythmic_gymnastics",
+      "name": "Художественная гимнастика",
+      "category": "Координационные",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "acrobatics",
+      "name": "Спортивная акробатика",
+      "category": "Координационные",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "trampoline",
+      "name": "Прыжки на батуте",
+      "category": "Координационные",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "figure_skating",
+      "name": "Фигурное катание",
+      "category": "Координационные",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "dance_sport",
+      "name": "Танцевальный спорт",
+      "category": "Координационные",
+      "team": true,
+      "contact": "none"
+    },
+    {
+      "id": "weightlifting",
+      "name": "Тяжёлая атлетика",
+      "category": "Силовые",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "powerlifting",
+      "name": "Пауэрлифтинг",
+      "category": "Силовые",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "kettlebell",
+      "name": "Гиревой спорт",
+      "category": "Силовые",
+      "team": false,
+      "contact": "none"
+    },
+    {
+      "id": "chess",
+      "name": "Шахматы",
+      "category": "Интеллектуально-спортивные",
+      "team": false,
+      "contact": "none"
+    }
+  ]
+}
