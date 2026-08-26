@@ -5,19 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- Подключение VK Bridge SDK и безопасная инициализация -->
+    <!-- 1. Подключение SDK VK Bridge -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
     <script>
         (function() {
-            function safeInitVK() {
+            function sendVkInit() {
                 if (window.vkBridge) {
                     window.vkBridge.send('VKWebAppInit')
-                        .then(function(data) { console.log("VK Init OK", data); })
+                        .then(function(res) { console.log("VK Init Success:", res); })
                         .catch(function(err) { console.warn("VK Init Handled:", err); });
                 }
             }
-            safeInitVK();
-            document.addEventListener("DOMContentLoaded", safeInitVK);
+            // Мгновенный вызов
+            sendVkInit();
+            // Вызов по готовности DOM
+            document.addEventListener("DOMContentLoaded", sendVkInit);
+            // Резервный вызов через 1 секунду для принудительного снятия заставки
+            setTimeout(sendVkInit, 1000);
         })();
     </script>
 
