@@ -14,13 +14,13 @@ body {
     display: flex;
     justify-content: center;
     padding: 12px;
-    overflow-x: hidden; /* Запрещаем горизонтальный скролл страницы */
+    overflow-x: hidden;
 }
 
 /* Контейнер приложения */
 .app-container {
     width: 100%;
-    max-width: 680px; /* Максимальная ширина для ПК */
+    max-width: 680px;
     margin: 0 auto;
 }
 
@@ -34,7 +34,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap; /* Разрешаем перенос элементов */
+    flex-wrap: wrap;
     gap: 12px;
 }
 
@@ -86,10 +86,240 @@ body {
 }
 
 /* ==========================================
-   АДАПТИВНЫЙ ДАШБОРД РЕЗУЛЬТАТОВ (АДАПТИВ)
+   ИСПРАВЛЕННЫЙ НАЧАЛЬНЫЙ ЭКРАН (WELCOME SCREEN)
    ========================================== */
+.mascot-box {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 16px;
+}
 
-/* Верхняя карточка спортсмена */
+.mascot-img-large {
+    width: 140px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.welcome-text {
+    flex: 1;
+    min-width: 0; /* Предотвращает распирание текста */
+}
+
+.welcome-text h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e3a8a;
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+
+.welcome-text p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #1e293b;
+}
+
+/* Кнопки */
+.btn-primary {
+    width: 100%;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:active {
+    background: #1d4ed8;
+}
+
+/* ==========================================
+   КВИЗ И ТЕСТЫ
+   ========================================== */
+.progress-bar-container {
+    margin-bottom: 16px;
+}
+
+.step-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 6px;
+}
+
+.progress-track {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #2563eb;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.question-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 12px;
+}
+
+.input-field {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 15px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+}
+
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.option-btn {
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.option-btn.selected {
+    border-color: #2563eb;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+.quiz-nav-btns {
+    margin-top: 14px;
+}
+
+.btn-secondary {
+    background: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Тест реакции и Теппинг-тест */
+.tapping-header {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.tapping-header h2 {
+    font-size: 18px;
+    color: #111827;
+    margin-bottom: 6px;
+}
+
+.tapping-header p {
+    font-size: 13px;
+    color: #4b5563;
+}
+
+.reaction-target-box {
+    width: 100%;
+    height: 160px;
+    border: 2px dashed #9ca3af;
+    border-radius: 16px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: #374151;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 14px;
+    text-align: center;
+    padding: 10px;
+}
+
+.tapping-timer-box {
+    text-align: center;
+    margin-bottom: 14px;
+}
+
+.timer-value {
+    font-size: 36px;
+    font-weight: 800;
+    color: #2563eb;
+    line-height: 1;
+}
+
+.timer-label {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.tap-button-zone {
+    width: 100%;
+    height: 160px;
+    border: 2px solid #2563eb;
+    border-radius: 16px;
+    background: #eff6ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 14px;
+    padding: 12px;
+    text-align: center;
+}
+
+.tap-button-zone.active {
+    background: #dbeafe;
+    border-color: #1d4ed8;
+}
+
+.tap-prompt {
+    font-size: 14px;
+    color: #1e40af;
+    font-weight: 600;
+}
+
+.tap-count-big {
+    font-size: 48px;
+    font-weight: 800;
+    color: #1e3a8a;
+}
+
+/* ==========================================
+   ДАШБОРД РЕЗУЛЬТАТОВ
+   ========================================== */
 .dashboard-header-card {
     background: #ffffff;
     border-radius: 16px;
@@ -125,25 +355,34 @@ body {
     color: #6b7280;
 }
 
-/* Группа кнопок в результатах */
 .action-buttons-group {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap;
     width: 100%;
 }
 
 .action-buttons-group button {
-    flex: 1; /* Кнопки делят ширину поровну */
-    min-width: 130px;
+    flex: 1;
     padding: 10px 14px;
     font-size: 13px;
     border-radius: 10px;
     cursor: pointer;
     text-align: center;
+    font-weight: 600;
 }
 
-/* Заключение Бельчонка Стаса */
+.btn-primary-blue {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+}
+
+.btn-outline {
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
 .gigachat-card {
     background: #f0f7ff;
     border: 1px solid #bae6fd;
@@ -166,7 +405,6 @@ body {
     color: #1e293b;
 }
 
-/* Сетка результатов (Была проблемой на мобильных) */
 .dashboard-grid-2col {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -188,7 +426,6 @@ body {
     color: #111827;
 }
 
-/* Прогресс-бары физических навыков */
 .stat-bar-group {
     margin-bottom: 10px;
 }
@@ -219,7 +456,6 @@ body {
     background: #10b981;
 }
 
-/* Строки информации */
 .info-row {
     display: flex;
     justify-content: space-between;
@@ -237,12 +473,27 @@ body {
     color: #111827;
 }
 
-/* Карточки рекомендаций секций */
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 12px;
+}
+
+.cat-subtitle {
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 10px;
+    margin-bottom: 8px;
+}
+
+.cat-recommended { color: #059669; }
+.cat-train { color: #d97706; }
+
 .cards-grid {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-top: 10px;
 }
 
 .sport-card {
@@ -273,7 +524,6 @@ body {
     margin-top: 4px;
 }
 
-/* Круг с процентом совместимости */
 .circle-score-wrap {
     width: 46px;
     height: 46px;
@@ -296,84 +546,40 @@ body {
     font-weight: 800;
 }
 
-/* Кнопки формы и интерфейса */
-.btn-primary {
-    width: 100%;
-    background: #2563eb;
-    color: #ffffff;
-    border: none;
-    padding: 14px;
-    border-radius: 12px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 12px;
-}
-
-.btn-primary-blue {
-    background: #2563eb;
-    color: #ffffff;
-    border: none;
-}
-
-.btn-outline {
-    background: #ffffff;
-    border: 1px solid #d1d5db;
-    color: #374151;
-}
-
-.input-field {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
-    font-size: 15px;
-    margin-top: 8px;
-    margin-bottom: 12px;
-}
-
-.options-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.option-btn {
-    width: 100%;
-    text-align: left;
-    padding: 12px;
-    border: 1px solid #e5e7eb;
-    background: #f9fafb;
-    border-radius: 10px;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.option-btn.selected {
-    border-color: #2563eb;
-    background: #eff6ff;
-    color: #1d4ed8;
-    font-weight: 600;
-}
-
 /* ==========================================
-   СПЕЦИАЛЬНЫЕ МЕДИА-ЗАПРОСЫ ДЛЯ МОБИЛЬНЫХ (📱)
+   СПЕЦИАЛЬНЫЙ АДАПТИВ ДЛЯ СМАРТФОНОВ (📱)
    ========================================== */
 @media (max-width: 600px) {
     body {
         padding: 6px;
     }
 
-    .main-header {
-        padding: 12px;
+    .card-screen {
+        padding: 16px 12px;
     }
 
-    .header-titles h1 {
-        font-size: 16px;
+    /* Исправление главного экрана: Бельчонок верху, текст под ним во всю ширину */
+    .mascot-box {
+        flex-direction: column;
+        text-align: center;
+        padding: 16px 12px;
+        gap: 12px;
     }
 
-    /* Главная карточка на смартфонах складывается в 1 колонку */
+    .mascot-img-large {
+        width: 110px;
+        height: auto;
+    }
+
+    .welcome-text h2 {
+        font-size: 18px;
+    }
+
+    .welcome-text p {
+        font-size: 13px;
+        text-align: left;
+    }
+
     .dashboard-grid-2col {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -382,24 +588,5 @@ body {
     .dashboard-header-card {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .action-buttons-group {
-        width: 100%;
-        margin-top: 8px;
-    }
-
-    .card-screen {
-        padding: 14px;
-    }
-
-    .mascot-box {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .mascot-img-large {
-        width: 100px;
-        height: auto;
     }
 }
