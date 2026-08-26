@@ -1,3 +1,10 @@
+/* ==========================================================================
+   СПОРТИВНЫЙ АГЕНТ СТАС — ФРОНТЕНД ЛОГИКА (VK MINI APP / LOCAL SERVER 24/7)
+   ========================================================================== */
+
+// 🔗 Ваш фиксированный HTTPS-адрес LocalTunnel
+const BACKEND_URL = "https://eleven-chairs-greet.loca.lt";
+
 document.addEventListener("DOMContentLoaded", () => {
     updateApiStatusBadge();
 });
@@ -5,25 +12,25 @@ document.addEventListener("DOMContentLoaded", () => {
 function updateApiStatusBadge() {
     const statusEl = document.getElementById("apiStatus");
     if (!statusEl) return;
-
-    statusEl.textContent = "STAS API: Подключено";
+    statusEl.textContent = "STAS API (Local Server): Подключено";
     statusEl.style.background = "#e8f9e9";
     statusEl.style.color = "#15803d";
 }
 
+// База профилей спортивных дисциплин СШОР «Академия спорта» г. Лангепас
 const SPORT_PROFILES = {
-    "СПОРТИВНАЯ АКРОБАТИКА": { min_age: 4, max_age: 16, org: "СШОР «Академия спорта»", weights: { flexibility: 0.45, coordination: 0.35, speed_strength: 0.20 }, pref_temp: ["sanguine"], max_bmi: 20.0, height_pref: "low", rank: 1.0 },
-    "ПРЫЖКИ НА БАТУТЕ": { min_age: 4, max_age: 18, org: "СШОР «Академия спорта»", weights: { coordination: 0.50, speed_strength: 0.30, flexibility: 0.20 }, pref_temp: ["sanguine"], max_bmi: 21.0, height_pref: "medium", rank: 0.92 },
+    "СПОРТИВНАЯ АКРОБАТИКА": { min_age: 4, max_age: 16, org: "СШОР «Академия спорта»", weights: { flexibility: 0.45, coordination: 0.35, speed_strength: 0.20 }, pref_temp: ["sanguine"], max_bmi: 20.0, rank: 1.0 },
+    "ПРЫЖКИ НА БАТУТЕ": { min_age: 4, max_age: 18, org: "СШОР «Академия спорта»", weights: { coordination: 0.50, speed_strength: 0.30, flexibility: 0.20 }, pref_temp: ["sanguine"], max_bmi: 21.0, rank: 0.92 },
     "БОКС": { min_age: 9, max_age: 55, org: "СШОР «Академия спорта»", weights: { speed: 0.35, strength: 0.30, speed_strength: 0.35 }, pref_temp: ["choleric"], nerve_pref: "Выпуклый", reaction_crit: true, rank: 0.95 },
     "ДЗЮДО": { min_age: 9, max_age: 55, org: "СШОР «Академия спорта»", weights: { strength: 0.40, coordination: 0.30, endurance: 0.30 }, pref_temp: ["phlegmatic", "sanguine"], nerve_pref: "Выпуклый", rank: 0.88 },
     "САМБО": { min_age: 9, max_age: 55, org: "СШОР «Академия спорта»", weights: { strength: 0.35, endurance: 0.35, coordination: 0.30 }, pref_temp: ["phlegmatic", "choleric"], nerve_pref: "Выпуклый", rank: 0.84 },
     "ВОЛЬНАЯ БОРЬБА": { min_age: 9, max_age: 45, org: "СШОР «Академия спорта»", weights: { strength: 0.40, speed_strength: 0.30, endurance: 0.30 }, pref_temp: ["choleric"], nerve_pref: "Выпуклый", rank: 0.81 },
-    "ТЯЖЁЛАЯ АТЛЕТИКА": { min_age: 10, max_age: 60, org: "СШОР «Академия спорта»", weights: { strength: 0.60, speed_strength: 0.40 }, pref_temp: ["phlegmatic"], min_bmi: 22.0, height_pref: "low", rank: 0.78 },
+    "ТЯЖЁЛАЯ АТЛЕТИКА": { min_age: 10, max_age: 60, org: "СШОР «Академия спорта»", weights: { strength: 0.60, speed_strength: 0.40 }, pref_temp: ["phlegmatic"], min_bmi: 22.0, rank: 0.78 },
     "СТРЕЛЬБА ИЗ ЛУКА": { min_age: 10, max_age: 65, org: "СШОР «Академия спорта»", weights: { coordination: 0.55, endurance: 0.45 }, pref_temp: ["phlegmatic", "melancholic"], nerve_pref: "Ровный", rank: 0.86 },
     "СМЕШАННЫЕ ЕДИНОБОРСТВА (ММА)": { min_age: 10, max_age: 45, org: "СШОР «Академия спорта»", weights: { strength: 0.35, endurance: 0.35, speed: 0.30 }, pref_temp: ["choleric"], nerve_pref: "Выпуклый", reaction_crit: true, rank: 0.90 },
-    "ПЛАВАНИЕ": { min_age: 5, max_age: 70, org: "СШ «Дельфин»", weights: { endurance: 0.45, coordination: 0.35, flexibility: 0.20 }, pref_temp: ["sanguine", "phlegmatic"], height_pref: "high", rank: 0.89 },
+    "ПЛАВАНИЕ": { min_age: 5, max_age: 70, org: "СШ «Дельфин»", weights: { endurance: 0.45, coordination: 0.35, flexibility: 0.20 }, pref_temp: ["sanguine", "phlegmatic"], rank: 0.89 },
     "ШАХМАТЫ": { min_age: 5, max_age: 80, org: "СШ «Лангепас»", weights: { coordination: 0.60, endurance: 0.40 }, pref_temp: ["phlegmatic", "melancholic"], nerve_pref: "Ровный", rank: 0.75 },
-    "БАСКЕТБОЛ": { min_age: 7, max_age: 50, org: "СШ «Лангепас»", weights: { speed: 0.35, speed_strength: 0.35, coordination: 0.30 }, pref_temp: ["sanguine"], height_pref: "high", rank: 0.83 }
+    "БАСКЕТБОЛ": { min_age: 7, max_age: 50, org: "СШ «Лангепас»", weights: { speed: 0.35, speed_strength: 0.35, coordination: 0.30 }, pref_temp: ["sanguine"], rank: 0.83 }
 };
 
 const questions = [
@@ -51,12 +58,12 @@ const questions = [
         { label: "🎯 Медленно, взвешенно (Флегматик)", val: "phlegmatic" },
         { label: "🛡️ Осторожно, сомневаясь (Меланхолик)", val: "melancholic" }
     ]},
-    { key: "parent_q1", type: "choice", title: "15. Анкета родителей (Кузнецова): Проявление интереса к спорту:", options: [
+    { key: "parent_q1", type: "choice", title: "15. Анкета родителей: Проявление интереса к спорту:", options: [
         { label: "🔥 Высокий — постоянная активность и инициатива", val: 10 },
         { label: "👍 Средний — занимается по настроению", val: 6 },
         { label: "🛡️ Низкий — предпочитает спокойный досуг", val: 3 }
     ]},
-    { key: "parent_q2", type: "choice", title: "16. Анкета родителей (Кузнецова): Готовность поддержки семьи:", options: [
+    { key: "parent_q2", type: "choice", title: "16. Анкета родителей: Готовность поддержки семьи:", options: [
         { label: "🏆 Полная готовность содействовать тренировкам", val: 10 },
         { label: "🤝 Умеренная поддержка при наличии времени", val: 6 },
         { label: "⏳ Ограниченная поддержка", val: 3 }
@@ -65,12 +72,10 @@ const questions = [
 
 let currentStep = 0;
 let userAnswers = {};
-
 let reactionStartTime = 0;
 let reactionTimerToken = null;
 let reactionState = "idle";
 let calculatedReactionMs = 0;
-
 let tapIntervals = [0, 0, 0, 0, 0, 0];
 let currentIntervalIdx = 0;
 let tapTimerToken = null;
@@ -354,11 +359,50 @@ function calculateClientResults() {
             tapping_test: userAnswers.tapping_result,
             reaction_test: userAnswers.reaction_result
         },
-        ai_recommendation: `СТАС проанализировал данные (${age} лет, ИМТ ${bmi}). Ваша ведущая предрасположенность: ${scored.slice(0, 3).map(s => `${s.sport_name} (${s.score}%)`).join(", ")}!`,
+        ai_recommendation: `Бельчонок СТАС проанализировал данные (${age} лет, ИМТ ${bmi}). Ваша ведущая предрасположенность: ${scored.slice(0, 3).map(s => `${s.sport_name} (${s.score}%)`).join(", ")}!`,
         top_sports: scored.slice(0, 6)
     };
 
     renderDashboard(resultPayload);
+    fetchServerGigaChatAI(resultPayload);
+}
+
+// Запрос к серверам FastAPI на вашем ПК с пробиванием защиты LocalTunnel
+async function fetchServerGigaChatAI(data) {
+    const aiTextEl = document.getElementById("resAiText");
+    const info = data.user_info;
+
+    if (aiTextEl) aiTextEl.textContent = "Бельчонок СТАС связывается с сервером и нейросетью GigaChat...";
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/analyze`, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "bypass-tunnel-reminder": "true" // 🔓 Автоматический пропуск предупредительного экрана LocalTunnel
+            },
+            body: JSON.stringify({
+                full_name: info.full_name || "Спортсмен",
+                age: info.age_years || 10,
+                top_sports: data.top_sports.map(s => s.sport_name),
+                nerve_type: info.tapping_test?.nerve_type || "Стабильная НС",
+                reaction_ms: info.reaction_test?.reaction_ms || 300,
+                bmi: info.bmi || 18.5
+            })
+        });
+
+        const result = await response.json();
+
+        if (result && result.ai_text) {
+            aiTextEl.textContent = result.ai_text;
+        } else {
+            aiTextEl.textContent = data.ai_recommendation;
+        }
+
+    } catch (e) {
+        console.warn("Локальный сервер недоступен, вывод локальной рекомендации:", e);
+        if (aiTextEl) aiTextEl.textContent = data.ai_recommendation;
+    }
 }
 
 function renderDashboard(data) {
@@ -367,8 +411,6 @@ function renderDashboard(data) {
     const info = data.user_info || {};
     document.getElementById("resChildName").textContent = info.full_name || "Спортсмен";
     document.getElementById("resChildAgeSex").textContent = `${info.age_years} лет | ${info.sex_label || "Спортсмен"}`;
-
-    document.getElementById("resAiText").textContent = data.ai_recommendation || "Рекомендация сформирована";
 
     const phys = info.physical || {};
     setBar("Speed", phys.speed || 6);
