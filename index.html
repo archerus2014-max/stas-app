@@ -4,10 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- SDK VK Bridge для работы в качестве VK Mini App -->
+
+    <!-- 1. Мгновенная инициализация VK Bridge для снятия зависания iframe -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
-    <!-- Генератор PDF-отчетов -->
+    <script>
+        if (window.vkBridge) {
+            window.vkBridge.send('VKWebAppInit').catch(function(err) {
+                console.error("VKInit Error:", err);
+            });
+        }
+    </script>
+
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -21,7 +29,7 @@
                     <p class="subtitle">СШОР «Академия спорта» г. Лангепас</p>
                 </div>
             </div>
-            <div id="apiStatus" class="api-badge">Инициализация VK Mini App...</div>
+            <div id="apiStatus" class="api-badge">STAS API: Подключено</div>
         </header>
 
         <!-- ЭКРАН 1: Приветствие -->
@@ -144,7 +152,7 @@
                     </div>
                 </div>
 
-                <!-- Важное дисклеймер-уведомление -->
+                <!-- Уведомление -->
                 <div class="disclaimer-note" style="margin-top: 16px; padding: 12px; background: #fffbe0; border: 1px solid #ffe58f; border-radius: 10px; font-size: 11px; color: #855900; text-align: center;">
                     <b>* Примечание:</b> Результаты данного тестирования носят исключительно рекомендательный характер и не являются официальным медицинским или спортивным заключением.
                 </div>
@@ -152,6 +160,7 @@
         </div>
     </div>
 
+    <!-- Основная логика приложения -->
     <script src="app.js"></script>
 </body>
 </html>
