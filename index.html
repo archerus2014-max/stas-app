@@ -5,26 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- Подключаем VK Bridge SDK -->
+    <!-- Инициализация VK Bridge в самом начале head -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
     <script>
-        (function() {
-            function initVK() {
-                if (window.vkBridge) {
-                    window.vkBridge.send('VKWebAppInit')
-                        .then(function(data) {
-                            console.log("VK Init Success:", data);
-                        })
-                        .catch(function(err) {
-                            console.error("VK Init Error:", err);
-                        });
-                }
-            }
-            // Мгновенная попытка инициализации
-            initVK();
-            // Повторная подстраховка после загрузки DOM
-            document.addEventListener("DOMContentLoaded", initVK);
-        })();
+        if (window.vkBridge) {
+            window.vkBridge.send('VKWebAppInit').catch(function(err) {
+                console.error("VKInit Error:", err);
+            });
+        }
     </script>
 
     <link rel="stylesheet" href="style.css">
@@ -32,7 +20,7 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Шапка с логотипом -->
+        <!-- Шапка -->
         <header class="main-header">
             <div class="header-content">
                 <img src="logo.png" alt="СШОР Академия спорта" class="logo-img" onerror="this.style.display='none'">
@@ -62,15 +50,13 @@
                 <div class="step-label" id="stepIndicator">Шаг 1 из 16</div>
                 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
             </div>
-
             <div id="questionContainer" class="question-container"></div>
-
             <div class="quiz-nav-btns">
                 <button type="button" id="prevBtn" class="btn-secondary" onclick="prevStep()" style="display:none;">⬅ Назад</button>
             </div>
         </div>
 
-        <!-- ЭКРАН 3: Сенсомоторный тест на реакцию -->
+        <!-- ЭКРАН 3: Тест на реакцию -->
         <div id="reactionScreen" class="card-screen hidden">
             <div class="tapping-header">
                 <h2>⚡ Тест на сенсомоторную реакцию</h2>
@@ -82,27 +68,24 @@
             <button id="startReactionBtn" class="btn-primary" onclick="startReactionTest()">🚀 НАЧАТЬ ТЕСТ РЕАКЦИИ</button>
         </div>
 
-        <!-- ЭКРАН 4: Теппинг-тест Е.П. Ильина -->
+        <!-- ЭКРАН 4: Теппинг-тест Ильина -->
         <div id="tappingScreen" class="card-screen hidden">
             <div class="tapping-header">
                 <h2>⏱️ Теппинг-тест Е.П. Ильина</h2>
                 <p>Определяем силу и лабильность нервной системы. Нажимайте на кнопку как можно быстрее в течение <b>30 секунд</b>!</p>
             </div>
-
             <div class="tapping-timer-box">
                 <div class="timer-value" id="tapTimer">30</div>
                 <div class="timer-label">секунд осталось</div>
             </div>
-
             <div id="tapArea" class="tap-button-zone" onclick="registerTap()">
                 <div id="tapPromptText" class="tap-prompt">Нажмите "НАЧАТЬ ТЕСТ", затем кликайте сюда максимально быстро!</div>
                 <div id="tapCountDisplay" class="tap-count-big">0</div>
             </div>
-
             <button id="startTapBtn" class="btn-primary" onclick="startTappingTest()">🚀 НАЧАТЬ ТЕСТ (30 сек)</button>
         </div>
 
-        <!-- ЭКРАН 5: Дашборд Результатов -->
+        <!-- ЭКРАН 5: Результаты -->
         <div id="resultsScreen" class="hidden">
             <div id="pdfReportContent">
                 <div class="dashboard-header-card">
@@ -119,7 +102,6 @@
                     </div>
                 </div>
 
-                <!-- Заключение Бельчонка Стаса -->
                 <div class="gigachat-card">
                     <div class="gigachat-header">
                         <span class="ai-sparkle">🤖</span>
@@ -151,7 +133,6 @@
                     </div>
                 </div>
 
-                <!-- Математический расчет предрасположенности -->
                 <div class="dashboard-recommendations-section">
                     <h2 class="section-title">📐 Математический расчёт совместимости с секциями</h2>
                     <div class="category-block">
@@ -164,7 +145,6 @@
                     </div>
                 </div>
 
-                <!-- Дисклеймер -->
                 <div class="disclaimer-note" style="margin-top: 16px; padding: 12px; background: #fffbe0; border: 1px solid #ffe58f; border-radius: 10px; font-size: 11px; color: #855900; text-align: center;">
                     <b>* Примечание:</b> Результаты данного тестирования носят исключительно рекомендательный характер и не являются официальным медицинским или спортивным заключением.
                 </div>

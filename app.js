@@ -1,32 +1,14 @@
-// Автономный движок СТАС для работы 24/7 в VK Mini Apps
-
 document.addEventListener("DOMContentLoaded", () => {
-    initVkBridge();
+    updateApiStatusBadge();
 });
 
-function initVkBridge() {
+function updateApiStatusBadge() {
     const statusEl = document.getElementById("apiStatus");
-    if (window.vkBridge) {
-        vkBridge.send('VKWebAppInit')
-            .then(() => {
-                if (statusEl) {
-                    statusEl.textContent = "VK Mini App: Активно";
-                    statusEl.style.background = "#e8f9e9";
-                    statusEl.style.color = "#15803d";
-                }
-            })
-            .catch(() => {
-                if (statusEl) {
-                    statusEl.textContent = "Автономный режим";
-                    statusEl.style.background = "#f3f4f6";
-                    statusEl.style.color = "#4b5563";
-                }
-            });
-    } else if (statusEl) {
-        statusEl.textContent = "Автономный режим";
-        statusEl.style.background = "#f3f4f6";
-        statusEl.style.color = "#4b5563";
-    }
+    if (!statusEl) return;
+
+    statusEl.textContent = "STAS API: Подключено";
+    statusEl.style.background = "#e8f9e9";
+    statusEl.style.color = "#15803d";
 }
 
 const SPORT_PROFILES = {
@@ -372,7 +354,7 @@ function calculateClientResults() {
             tapping_test: userAnswers.tapping_result,
             reaction_test: userAnswers.reaction_result
         },
-        ai_recommendation: `СТАС проанализировал данные (${age} лет, ИМТ ${bmi}). Ваша ведущая предрасположенность: ${scored.slice(0, 3).map(s => `${s.sport_name} (${s.score}%)`).join(", ")}! *Результаты носят исключительно рекомендательный характер.`,
+        ai_recommendation: `СТАС проанализировал данные (${age} лет, ИМТ ${bmi}). Ваша ведущая предрасположенность: ${scored.slice(0, 3).map(s => `${s.sport_name} (${s.score}%)`).join(", ")}!`,
         top_sports: scored.slice(0, 6)
     };
 
