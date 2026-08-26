@@ -5,14 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- 1. Мгновенная инициализация VK Bridge для снятия зависания iframe -->
+    <!-- Подключаем VK Bridge SDK -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
     <script>
-        if (window.vkBridge) {
-            window.vkBridge.send('VKWebAppInit').catch(function(err) {
-                console.error("VKInit Error:", err);
-            });
-        }
+        (function() {
+            function initVK() {
+                if (window.vkBridge) {
+                    window.vkBridge.send('VKWebAppInit')
+                        .then(function(data) {
+                            console.log("VK Init Success:", data);
+                        })
+                        .catch(function(err) {
+                            console.error("VK Init Error:", err);
+                        });
+                }
+            }
+            // Мгновенная попытка инициализации
+            initVK();
+            // Повторная подстраховка после загрузки DOM
+            document.addEventListener("DOMContentLoaded", initVK);
+        })();
     </script>
 
     <link rel="stylesheet" href="style.css">
@@ -152,7 +164,7 @@
                     </div>
                 </div>
 
-                <!-- Уведомление -->
+                <!-- Дисклеймер -->
                 <div class="disclaimer-note" style="margin-top: 16px; padding: 12px; background: #fffbe0; border: 1px solid #ffe58f; border-radius: 10px; font-size: 11px; color: #855900; text-align: center;">
                     <b>* Примечание:</b> Результаты данного тестирования носят исключительно рекомендательный характер и не являются официальным медицинским или спортивным заключением.
                 </div>
@@ -160,7 +172,6 @@
         </div>
     </div>
 
-    <!-- Основная логика приложения -->
     <script src="app.js"></script>
 </body>
 </html>
