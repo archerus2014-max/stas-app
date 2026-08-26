@@ -1,204 +1,455 @@
 {
-  "schema_version": "1.0",
-  "updated_at": "2026-08-24",
-  "description": "Базовый каталог видов спорта СТАС. Профили требований будут заполняться и подтверждаться источниками отдельно.",
-  "scoring_note": "Поля требований намеренно не заполнены на этом этапе: они не должны выдумываться без источников.",
+  "schema_version": "1.2",
   "sports": [
     {
       "id": "basketball",
-      "name": "Баскетбол",
-      "category": "Игровые",
+      "name": "Basketball",
+      "display_name": "Баскетбол",
+      "category": "team",
+      "physical": {
+        "endurance": 8,
+        "strength": 7,
+        "speed": 9
+      },
+      "psychology": {
+        "teamwork": 9,
+        "competition": 9,
+        "discipline": 8
+      },
+      "anthropometry": {
+        "height": 8,
+        "weight": 5
+      },
       "team": true,
-      "contact": "medium"
+      "contact": "moderate",
+      "age_min": 6,
+      "age_max": 60,
+      "sources": []
     },
     {
       "id": "volleyball",
-      "name": "Волейбол",
-      "category": "Игровые",
+      "name": "Volleyball",
+      "display_name": "Волейбол",
+      "category": "team",
+      "physical": {
+        "endurance": 7,
+        "strength": 6,
+        "speed": 8
+      },
+      "psychology": {
+        "teamwork": 10,
+        "competition": 8,
+        "discipline": 8
+      },
+      "anthropometry": {
+        "height": 7,
+        "weight": 4
+      },
       "team": true,
-      "contact": "low"
+      "contact": "none",
+      "age_min": 6,
+      "age_max": 60,
+      "sources": []
     },
     {
       "id": "football",
-      "name": "Футбол",
-      "category": "Игровые",
+      "name": "Football",
+      "display_name": "Футбол",
+      "category": "team",
+      "physical": {
+        "endurance": 8,
+        "strength": 6,
+        "speed": 9
+      },
+      "psychology": {
+        "teamwork": 9,
+        "competition": 8,
+        "discipline": 8
+      },
+      "anthropometry": {
+        "height": 5,
+        "weight": 5
+      },
       "team": true,
-      "contact": "medium"
+      "contact": "moderate",
+      "age_min": 6,
+      "age_max": 60,
+      "sources": []
     },
     {
       "id": "mini_football",
-      "name": "Мини-футбол",
-      "category": "Игровые",
+      "name": "Mini Football",
+      "display_name": "Мини-футбол",
+      "category": "team",
+      "physical": {
+        "endurance": 9,
+        "strength": 6,
+        "speed": 9
+      },
+      "psychology": {
+        "teamwork": 9,
+        "competition": 9,
+        "discipline": 8
+      },
+      "anthropometry": {
+        "height": 4,
+        "weight": 4
+      },
       "team": true,
-      "contact": "medium"
+      "contact": "moderate",
+      "age_min": 6,
+      "age_max": 55,
+      "sources": []
     },
     {
       "id": "hockey",
-      "name": "Хоккей",
-      "category": "Игровые",
+      "name": "Hockey",
+      "display_name": "Хоккей",
+      "category": "team",
+      "physical": {
+        "endurance": 9,
+        "strength": 8,
+        "speed": 9
+      },
+      "psychology": {
+        "teamwork": 9,
+        "competition": 9,
+        "discipline": 9
+      },
+      "anthropometry": {
+        "height": 5,
+        "weight": 6
+      },
       "team": true,
-      "contact": "high"
+      "contact": "high",
+      "age_min": 6,
+      "age_max": 55,
+      "sources": []
     },
     {
       "id": "tennis",
-      "name": "Теннис",
-      "category": "Ракеточные",
+      "name": "Tennis",
+      "display_name": "Теннис",
+      "category": "individual",
+      "physical": {
+        "endurance": 8,
+        "strength": 5,
+        "speed": 8
+      },
+      "psychology": {
+        "teamwork": 3,
+        "competition": 9,
+        "discipline": 9
+      },
+      "anthropometry": {
+        "height": 5,
+        "weight": 5
+      },
       "team": false,
-      "contact": "low"
+      "contact": "none",
+      "age_min": 5,
+      "age_max": 70,
+      "sources": []
     },
     {
       "id": "table_tennis",
-      "name": "Настольный теннис",
-      "category": "Ракеточные",
+      "name": "Table Tennis",
+      "display_name": "Настольный теннис",
+      "category": "individual",
+      "physical": {
+        "endurance": 6,
+        "strength": 3,
+        "speed": 9
+      },
+      "psychology": {
+        "teamwork": 3,
+        "competition": 9,
+        "discipline": 9
+      },
+      "anthropometry": {
+        "height": 3,
+        "weight": 3
+      },
       "team": false,
-      "contact": "none"
-    },
-    {
-      "id": "badminton",
-      "name": "Бадминтон",
-      "category": "Ракеточные",
-      "team": false,
-      "contact": "none"
-    },
-    {
-      "id": "judo",
-      "name": "Дзюдо",
-      "category": "Единоборства",
-      "team": false,
-      "contact": "high"
-    },
-    {
-      "id": "sambo",
-      "name": "Самбо",
-      "category": "Единоборства",
-      "team": false,
-      "contact": "high"
-    },
-    {
-      "id": "boxing",
-      "name": "Бокс",
-      "category": "Единоборства",
-      "team": false,
-      "contact": "high"
-    },
-    {
-      "id": "karate",
-      "name": "Каратэ",
-      "category": "Единоборства",
-      "team": false,
-      "contact": "medium"
-    },
-    {
-      "id": "taekwondo",
-      "name": "Тхэквондо",
-      "category": "Единоборства",
-      "team": false,
-      "contact": "medium"
+      "contact": "none",
+      "age_min": 5,
+      "age_max": 75,
+      "sources": []
     },
     {
       "id": "swimming",
-      "name": "Плавание",
-      "category": "Циклические",
+      "name": "Swimming",
+      "display_name": "Плавание",
+      "category": "individual",
+      "physical": {
+        "endurance": 10,
+        "strength": 7,
+        "speed": 7
+      },
+      "psychology": {
+        "teamwork": 4,
+        "competition": 8,
+        "discipline": 9
+      },
+      "anthropometry": {
+        "height": 6,
+        "weight": 5
+      },
       "team": false,
-      "contact": "none"
-    },
-    {
-      "id": "athletics",
-      "name": "Лёгкая атлетика",
-      "category": "Циклические",
-      "team": false,
-      "contact": "none"
+      "contact": "none",
+      "age_min": 4,
+      "age_max": 75,
+      "sources": []
     },
     {
       "id": "cross_country_skiing",
-      "name": "Лыжные гонки",
-      "category": "Циклические",
+      "name": "Cross Country Skiing",
+      "display_name": "Лыжные гонки",
+      "category": "individual",
+      "physical": {
+        "endurance": 10,
+        "strength": 8,
+        "speed": 8
+      },
+      "psychology": {
+        "teamwork": 4,
+        "competition": 9,
+        "discipline": 10
+      },
+      "anthropometry": {
+        "height": 5,
+        "weight": 5
+      },
       "team": false,
-      "contact": "none"
+      "contact": "none",
+      "age_min": 6,
+      "age_max": 65,
+      "sources": []
     },
     {
-      "id": "cycling",
-      "name": "Велоспорт",
-      "category": "Циклические",
+      "id": "judo",
+      "name": "Judo",
+      "display_name": "Дзюдо",
+      "category": "combat",
+      "physical": {
+        "endurance": 7,
+        "strength": 9,
+        "speed": 8
+      },
+      "psychology": {
+        "teamwork": 3,
+        "competition": 9,
+        "discipline": 10
+      },
+      "anthropometry": {
+        "height": 5,
+        "weight": 7
+      },
       "team": false,
-      "contact": "low"
+      "contact": "high",
+      "age_min": 5,
+      "age_max": 60,
+      "sources": []
     },
     {
-      "id": "orienteering",
-      "name": "Спортивное ориентирование",
-      "category": "Циклические",
+      "id": "boxing",
+      "name": "Boxing",
+      "display_name": "Бокс",
+      "category": "combat",
+      "physical": {
+        "endurance": 8,
+        "strength": 8,
+        "speed": 9
+      },
+      "psychology": {
+        "teamwork": 2,
+        "competition": 10,
+        "discipline": 10
+      },
+      "anthropometry": {
+        "height": 5,
+        "weight": 7
+      },
       "team": false,
-      "contact": "none"
-    },
-    {
-      "id": "artistic_gymnastics",
-      "name": "Спортивная гимнастика",
-      "category": "Координационные",
-      "team": false,
-      "contact": "none"
-    },
-    {
-      "id": "rhythmic_gymnastics",
-      "name": "Художественная гимнастика",
-      "category": "Координационные",
-      "team": false,
-      "contact": "none"
-    },
-    {
-      "id": "acrobatics",
-      "name": "Спортивная акробатика",
-      "category": "Координационные",
-      "team": false,
-      "contact": "none"
-    },
-    {
-      "id": "trampoline",
-      "name": "Прыжки на батуте",
-      "category": "Координационные",
-      "team": false,
-      "contact": "none"
-    },
-    {
-      "id": "figure_skating",
-      "name": "Фигурное катание",
-      "category": "Координационные",
-      "team": false,
-      "contact": "none"
+      "contact": "high",
+      "age_min": 8,
+      "age_max": 55,
+      "sources": []
     },
     {
       "id": "dance_sport",
-      "name": "Танцевальный спорт",
-      "category": "Координационные",
-      "team": true,
-      "contact": "none"
-    },
-    {
-      "id": "weightlifting",
-      "name": "Тяжёлая атлетика",
-      "category": "Силовые",
+      "name": "Dance Sport",
+      "display_name": "Танцевальный спорт",
+      "category": "individual",
+      "physical": {
+        "endurance": 8,
+        "strength": 5,
+        "speed": 8
+      },
+      "psychology": {
+        "teamwork": 7,
+        "competition": 8,
+        "discipline": 9
+      },
+      "anthropometry": {
+        "height": 5,
+        "weight": 4
+      },
       "team": false,
-      "contact": "none"
-    },
-    {
-      "id": "powerlifting",
-      "name": "Пауэрлифтинг",
-      "category": "Силовые",
-      "team": false,
-      "contact": "none"
-    },
-    {
-      "id": "kettlebell",
-      "name": "Гиревой спорт",
-      "category": "Силовые",
-      "team": false,
-      "contact": "none"
+      "contact": "none",
+      "age_min": 5,
+      "age_max": 70,
+      "sources": []
     },
     {
       "id": "chess",
-      "name": "Шахматы",
-      "category": "Интеллектуально-спортивные",
+      "name": "Chess",
+      "display_name": "Шахматы",
+      "category": "mind",
+      "physical": {
+        "endurance": 2,
+        "strength": 1,
+        "speed": 2
+      },
+      "psychology": {
+        "teamwork": 3,
+        "competition": 9,
+        "discipline": 10
+      },
+      "anthropometry": {
+        "height": 1,
+        "weight": 1
+      },
       "team": false,
-      "contact": "none"
+      "contact": "none",
+      "age_min": 5,
+      "age_max": 100,
+      "sources": []
+    },
+    {
+      "id": "draughts",
+      "name": "Draughts",
+      "display_name": "Шашки",
+      "category": "mind",
+      "physical": {
+        "endurance": 2,
+        "strength": 1,
+        "speed": 2
+      },
+      "psychology": {
+        "teamwork": 3,
+        "competition": 8,
+        "discipline": 9
+      },
+      "anthropometry": {
+        "height": 1,
+        "weight": 1
+      },
+      "team": false,
+      "contact": "none",
+      "age_min": 5,
+      "age_max": 100,
+      "sources": []
+    },
+    {
+      "id": "weightlifting",
+      "name": "Weightlifting",
+      "display_name": "Тяжёлая атлетика",
+      "category": "strength",
+      "physical": {
+        "endurance": 4,
+        "strength": 10,
+        "speed": 6
+      },
+      "psychology": {
+        "teamwork": 2,
+        "competition": 9,
+        "discipline": 10
+      },
+      "anthropometry": {
+        "height": 5,
+        "weight": 8
+      },
+      "team": false,
+      "contact": "none",
+      "age_min": 8,
+      "age_max": 60,
+      "sources": []
+    },
+    {
+      "id": "armwrestling",
+      "name": "Armwrestling",
+      "display_name": "Армрестлинг",
+      "category": "strength",
+      "physical": {
+        "endurance": 3,
+        "strength": 10,
+        "speed": 5
+      },
+      "psychology": {
+        "teamwork": 2,
+        "competition": 10,
+        "discipline": 9
+      },
+      "anthropometry": {
+        "height": 4,
+        "weight": 7
+      },
+      "team": false,
+      "contact": "moderate",
+      "age_min": 10,
+      "age_max": 60,
+      "sources": []
+    },
+    {
+      "id": "curling",
+      "name": "Curling",
+      "display_name": "Кёрлинг",
+      "category": "team",
+      "physical": {
+        "endurance": 5,
+        "strength": 4,
+        "speed": 4
+      },
+      "psychology": {
+        "teamwork": 9,
+        "competition": 8,
+        "discipline": 9
+      },
+      "anthropometry": {
+        "height": 4,
+        "weight": 4
+      },
+      "team": true,
+      "contact": "none",
+      "age_min": 8,
+      "age_max": 70,
+      "sources": []
+    },
+    {
+      "id": "darts",
+      "name": "Darts",
+      "display_name": "Дартс",
+      "category": "individual",
+      "physical": {
+        "endurance": 2,
+        "strength": 2,
+        "speed": 5
+      },
+      "psychology": {
+        "teamwork": 3,
+        "competition": 8,
+        "discipline": 9
+      },
+      "anthropometry": {
+        "height": 2,
+        "weight": 2
+      },
+      "team": false,
+      "contact": "none",
+      "age_min": 8,
+      "age_max": 80,
+      "sources": []
     }
   ]
 }

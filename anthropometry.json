@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-08-24",
+  "description": "Структура антропометрических данных СТАС. Пороговые значения и нормативы не задаются без подтверждённого источника.",
+  "principles": [
+    "Для детей интерпретация ИМТ должна учитывать возраст и пол, а не использовать взрослые фиксированные пороги.",
+    "Рост и масса используются как исходные показатели, а не как самостоятельное основание для назначения вида спорта.",
+    "Антропометрические показатели являются одним из факторов спортивного соответствия и не должны определять рекомендацию единолично.",
+    "Медицинские диагнозы не устанавливаются СТАС; при наличии ограничений результат должен содержать предупреждение о необходимости консультации специалиста."
+  ],
+  "measurements": {
+    "height_cm": {
+      "type": "number",
+      "min": 40,
+      "max": 250,
+      "unit": "cm"
+    },
+    "weight_kg": {
+      "type": "number",
+      "min": 2,
+      "max": 300,
+      "unit": "kg"
+    },
+    "age_years": {
+      "type": "number",
+      "min": 3,
+      "max": 100,
+      "unit": "years"
+    },
+    "sex": {
+      "type": "enum",
+      "values": [
+        "female",
+        "male",
+        "not_specified"
+      ]
+    }
+  },
+  "derived_metrics": {
+    "bmi": {
+      "formula": "weight_kg / (height_m ^ 2)",
+      "unit": "kg/m2"
+    },
+    "height_percentile": {
+      "status": "requires_reference_data"
+    },
+    "bmi_percentile": {
+      "status": "requires_age_sex_reference_data"
+    }
+  },
+  "reference_data": {
+    "children": {
+      "height_for_age": {
+        "status": "not_loaded",
+        "source_id": null
+      },
+      "bmi_for_age": {
+        "status": "not_loaded",
+        "source_id": null
+      }
+    },
+    "adults": {
+      "bmi_reference": {
+        "status": "not_loaded",
+        "source_id": null
+      }
+    }
+  },
+  "validation": {
+    "height_required": true,
+    "weight_required": true,
+    "age_required": true,
+    "sex_required_for_child_reference_interpretation": true
+  }
+}
