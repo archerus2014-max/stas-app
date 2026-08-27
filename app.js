@@ -73,10 +73,11 @@ const temperamentRu = {
 };
 
 // ==========================================
-// 2. ИНИЦИАЛИЗАЦИЯ И СВЯЗЬ
+// 2. ИНИЦИАЛИЗАЦИЯ И ИНТЕГРАЦИЯ VK BRIDGE
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     checkApiConnection();
+    initVkBridgeData();
 });
 
 async function checkApiConnection() {
@@ -89,6 +90,22 @@ async function checkApiConnection() {
         }
     } catch (e) {
         console.log("Health check error:", e);
+    }
+}
+
+// Получение профиля пользователя из ВКонтакте
+function initVkBridgeData() {
+    if (window.vkBridge) {
+        window.vkBridge.send('VKWebAppGetUserInfo')
+            .then((user) => {
+                if (user && user.first_name) {
+                    // Подставляем имя и фамилию пользователя из VK
+                    userAnswers.full_name = `${user.first_name} ${user.last_name}`;
+                }
+            })
+            .catch((error) => {
+                console.log("[VK Bridge] Получение профиля недоступно (веб-версия или отклонено пользователем):", error);
+            });
     }
 }
 
@@ -112,7 +129,6 @@ function showScreen(screenId) {
 // ==========================================
 function startQuiz() {
     currentQuizStep = 0;
-    userAnswers.full_name = "";
     showScreen("quizScreen");
     renderQuestion();
 }
