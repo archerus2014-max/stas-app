@@ -5,19 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- Мгновенное подключение и инициализация VK Bridge -->
+    <!-- Подключение VK Bridge SDK -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
     <script>
-        try {
-            if (window.vkBridge) {
-                window.vkBridge.send("VKWebAppInit");
+        // Агрессивная и гарантированная отправка события VKWebAppInit
+        (function() {
+            function init() {
+                if (window.vkBridge) {
+                    window.vkBridge.send("VKWebAppInit")
+                        .then(data => console.log("[VK Bridge] Initialized success:", data))
+                        .catch(err => console.warn("[VK Bridge] Init error:", err));
+                }
             }
-        } catch (e) {
-            console.warn("[VK Bridge Init Direct Error]", e);
-        }
+            init();
+            document.addEventListener("DOMContentLoaded", init);
+            window.addEventListener("load", init);
+        })();
     </script>
 
-    <link rel="stylesheet" href="style.css?v=13.0">
+    <link rel="stylesheet" href="style.css?v=15.0">
 </head>
 <body>
     <div class="app-container">
@@ -152,6 +158,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=13.0"></script>
+    <script src="app.js?v=15.0"></script>
 </body>
 </html>

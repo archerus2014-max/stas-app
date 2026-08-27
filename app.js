@@ -72,18 +72,18 @@ const temperamentRu = {
 };
 
 // ==========================================
-// 2. ИНИЦИАЛИЗАЦИЯ И VK BRIDGE
+// 2. ИНИЦИАЛИЗАЦИЯ VK BRIDGE ПРИ ЗАГРУЗКЕ
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    initVkBridge();
+    initVkBridgeData();
     checkApiConnection();
 });
 
-function initVkBridge() {
+function initVkBridgeData() {
     if (window.vkBridge) {
         window.vkBridge.send("VKWebAppInit")
-            .then(() => console.log("[VK Bridge] Подключен"))
-            .catch(err => console.warn("[VK Bridge] Ошибка:", err));
+            .then(() => console.log("[VK Bridge] Initialized in app.js"))
+            .catch(() => {});
 
         window.vkBridge.send('VKWebAppGetUserInfo')
             .then((user) => {
