@@ -5,25 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- Подключение VK Bridge SDK -->
+    <!-- Подключение официального SDK VK Bridge -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
     <script>
-        // Агрессивная и гарантированная отправка события VKWebAppInit
         (function() {
-            function init() {
-                if (window.vkBridge) {
-                    window.vkBridge.send("VKWebAppInit")
-                        .then(data => console.log("[VK Bridge] Initialized success:", data))
-                        .catch(err => console.warn("[VK Bridge] Init error:", err));
-                }
+            // Корректная подписка и инициализация для VK Mini Apps
+            if (window.vkBridge) {
+                window.vkBridge.subscribe((e) => {
+                    if (e.detail && e.detail.type === 'VKWebAppInitResult') {
+                        console.log("[VK Bridge] Подтверждение инициализации получено");
+                    }
+                });
+                window.vkBridge.send("VKWebAppInit")
+                    .then(() => console.log("[VK Bridge] VKWebAppInit отправлен"))
+                    .catch(err => console.warn("[VK Bridge Init Error]", err));
             }
-            init();
-            document.addEventListener("DOMContentLoaded", init);
-            window.addEventListener("load", init);
         })();
     </script>
 
-    <link rel="stylesheet" href="style.css?v=15.0">
+    <link rel="stylesheet" href="style.css?v=16.0">
 </head>
 <body>
     <div class="app-container">
@@ -158,6 +158,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=15.0"></script>
+    <script src="app.js?v=16.0"></script>
 </body>
 </html>
