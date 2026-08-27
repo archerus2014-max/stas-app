@@ -4,3 +4,5 @@ pydantic>=2.12.5
 pydantic-settings>=2.15.0
 gigachat>=0.1.25
 requests
+pandas
+xlrd
