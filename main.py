@@ -24,6 +24,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def add_vk_iframe_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Content-Security-Policy"] = (
+        "frame-ancestors 'self' https://*.vk.com https://*.vk.ru https://vk.com https://vk.ru https://*.vk-apps.com;"
+    )
+    if "X-Frame-Options" in response.headers:
+        del response.headers["X-Frame-Options"]
+    return response
+
 GIGACHAT_CREDENTIALS = os.getenv("GIGACHAT_CREDENTIALS", "")
 VK_CONFIRMATION_CODE = os.getenv("VK_CONFIRMATION_CODE", "a23e9568")
 VK_SECRET_KEY = os.getenv("VK_SECRET_KEY", "f5b76090b2395159999dc866fd3e79b0")
@@ -33,6 +43,13 @@ FEMALE_ONLY_SPORTS = [
     "художественная гимнастика",
     "эстетическая гимнастика",
     "синхронное плавание"
+]
+
+# Технические и нефизические виды спорта (исключаются из рекомендаций)
+EXCLUDED_SPORTS = [
+    "авиамодельный", "автомобильный", "авиационные гонки", "мотоциклетный",
+    "радиоспорт", "судомодельный", "ракетомодельный", "компьютерный",
+    "пожарно-спасательный", "морское многоборье", "боулинг", "гольф", "шашки"
 ]
 
 def clean_sport_name(name: str) -> str:
@@ -97,6 +114,10 @@ def load_sports_from_excel() -> Tuple[List[Dict], List[Dict]]:
             
             clean_name = clean_sport_name(sport_raw)
 
+            # Исключение нефизических/технических видов
+            if any(ex in clean_name.lower() for ex in EXCLUDED_SPORTS):
+                continue
+
             item = {
                 "name": clean_name,
                 "org": current_org if not is_other_section else "",
@@ -140,9 +161,6 @@ class AthletePayload(BaseModel):
     nerve_type: str
 
 
-# ==========================================
-# GIGACHAT ИНТЕГРАЦИЯ
-# ==========================================
 def get_gigachat_token(credentials: str) -> Optional[str]:
     if not credentials:
         return None
@@ -205,7 +223,7 @@ def ask_gigachat(prompt_text: str, credentials: str) -> Optional[str]:
 
 
 # ==========================================
-# ИНДИВИДУАЛЬНАЯ МАТЕМАТИЧЕСКАЯ МОДЕЛЬ ОТБОРА
+# ЕДИНАЯ НАУЧНАЯ МАТЕМАТИЧЕСКАЯ МОДЕЛЬ ОТБОРА
 # ==========================================
 def calculate_sport_score(sport: dict, p: PhysicalSkills, payload: AthletePayload, predicted_height: float) -> Optional[dict]:
     name = sport["name"]
@@ -215,8 +233,7 @@ def calculate_sport_score(sport: dict, p: PhysicalSkills, payload: AthletePayloa
     if payload.sex == "male" and any(fem in name_low for fem in FEMALE_ONLY_SPORTS):
         return None
 
-    # 2. Оценка качества реакции (шкала 1.0 - 10.0)
-    # Нормальная реакция 250-350мс
+    # 2. Оценка сенсомоторной реакции (шкала 4.0 - 10.0)
     if payload.reaction_ms <= 220:
         react_score = 10.0
     elif payload.reaction_ms <= 280:
@@ -226,59 +243,61 @@ def calculate_sport_score(sport: dict, p: PhysicalSkills, payload: AthletePayloa
     else:
         react_score = 4.0
 
-    # 3. Индивидуальный подсчет профиля навыков по видам спорта
-    if any(w in name_low for w in ["акробат", "батут", "гимнаст", "рок-н-ролл", "брейкинг", "аэробик"]):
-        raw_skill = p.coordination * 0.40 + p.flexibility * 0.35 + p.speed * 0.15 + p.speed_strength * 0.10
-        # Возрастной приоритет: идеальный возраст 5-8 лет
+    # 3. Распределение по 6 ключевым спортивным профилям
+    
+    # ПРОФИЛЬ 1: Сложнокоординационные и эстетические виды
+    if any(w in name_low for w in ["акробат", "батут", "гимнаст", "рок-н-ролл", "брейкинг", "аэробик", "танцевальный", "фигурное", "скалолазание", "прыжки в воду", "парусный", "фристайл"]):
+        raw_skill = p.coordination * 0.40 + p.flexibility * 0.30 + p.speed * 0.15 + p.speed_strength * 0.15
         age_weight = 1.25 if payload.age <= 8 else (1.00 if payload.age <= 11 else 0.80)
         nerve_weight = 1.20 if "слабая" in payload.nerve_type.lower() or "стабильная" in payload.nerve_type.lower() else 0.90
 
-    elif any(w in name_low for w in ["бокс", "дзюдо", "самбо", "борьб", "единоборств", "мма", "грэпплинг", "грепплинг", "тхэквондо", "муайтай", "каратэ", "рукопашн"]):
+    # ПРОФИЛЬ 2: Спортивные единоборства
+    elif any(w in name_low for w in ["бокс", "дзюдо", "самбо", "борьб", "единоборств", "мма", "грэпплинг", "грепплинг", "тхэквондо", "муайтай", "каратэ", "рукопашн", "фехтование", "кикбоксинг", "айкидо", "сумо", "кудо"]):
         raw_skill = react_score * 0.30 + p.speed * 0.25 + p.strength * 0.25 + p.endurance * 0.20
-        # Возрастной приоритет: идеальный возраст 9-13 лет
         age_weight = 0.70 if payload.age <= 7 else (1.20 if payload.age <= 12 else 1.10)
         nerve_weight = 1.25 if "сильная" in payload.nerve_type.lower() else 0.85
 
-    elif any(w in name_low for w in ["лук", "шахмат", "стрельб", "дартс"]):
+    # ПРОФИЛЬ 3: Стрелковые и точностные виды
+    elif any(w in name_low for w in ["лук", "шахмат", "стрельб", "дартс", "бильярд", "го"]):
         raw_skill = react_score * 0.40 + p.coordination * 0.40 + p.endurance * 0.20
-        # Возрастной приоритет: идеальный возраст 9+ лет
         age_weight = 0.65 if payload.age <= 8 else 1.25
         nerve_weight = 1.30 if "слабая" in payload.nerve_type.lower() or "стабильная" in payload.nerve_type.lower() else 0.75
 
-    elif any(w in name_low for w in ["тяжёлая атлетика", "пауэрлифт", "гирев", "силовой"]):
-        raw_skill = p.strength * 0.50 + p.speed_strength * 0.35 + p.endurance * 0.15
-        # Возрастной приоритет: НЕ рекомендовано до 10 лет
+    # ПРОФИЛЬ 4: Скоростно-силовые и тяжелоатлетические виды
+    elif any(w in name_low for w in ["тяжёлая атлетика", "пауэрлифт", "гирев", "силовой", "бодибилдинг", "армрестлинг", "метание", "спринт"]):
+        raw_skill = p.strength * 0.45 + p.speed_strength * 0.35 + p.endurance * 0.20
         age_weight = 0.40 if payload.age <= 8 else (0.75 if payload.age <= 9 else 1.30)
         nerve_weight = 1.20 if "сильная" in payload.nerve_type.lower() else 0.85
 
-    elif any(w in name_low for w in ["плаван", "лыжн", "биатлон", "бег", "велосипед", "конькобеж"]):
+    # ПРОФИЛЬ 5: Циклические виды на выносливость
+    elif any(w in name_low for w in ["плаван", "лыжн", "биатлон", "бег", "велосипед", "конькобеж", "гребля", "триатлон", "легкая атлетика", "ориентирование", "пятиборье"]):
         raw_skill = p.endurance * 0.45 + p.speed * 0.30 + p.coordination * 0.25
         age_weight = 1.10 if payload.age >= 8 else 0.90
         nerve_weight = 1.05
 
-    elif any(w in name_low for w in ["баскетбол", "волейбол"]):
-        raw_skill = p.speed_strength * 0.35 + p.coordination * 0.30 + p.speed * 0.20 + p.endurance * 0.15
-        # Бонус за высокий генетический рост
-        height_bonus = 1.25 if ((payload.sex == "male" and predicted_height >= 180) or (payload.sex == "female" and predicted_height >= 172)) else 0.90
-        raw_skill *= height_bonus
-        age_weight = 0.80 if payload.age <= 7 else 1.20
-        nerve_weight = 1.15 if "сильная" in payload.nerve_type.lower() or "сангвиник" in payload.temperament.lower() else 0.95
-
-    elif any(w in name_low for w in ["футбол", "хоккей", "теннис", "гандбол"]):
+    # ПРОФИЛЬ 6: Командно-игровые виды и спортивные игры
+    elif any(w in name_low for w in ["баскетбол", "волейбол", "водное поло", "бадминтон", "футбол", "хоккей", "теннис", "гандбол", "регби", "флорбол", "софтбол", "бейсбол", "гольф"]):
         raw_skill = p.speed * 0.30 + p.coordination * 0.30 + p.speed_strength * 0.25 + react_score * 0.15
+        
+        # Ростовой фактор для баскетбола/волейбола
+        if any(h in name_low for h in ["баскетбол", "волейбол"]):
+            height_bonus = 1.25 if ((payload.sex == "male" and predicted_height >= 180) or (payload.sex == "female" and predicted_height >= 172)) else 0.90
+            raw_skill *= height_bonus
+
         age_weight = 0.85 if payload.age <= 7 else 1.20
         nerve_weight = 1.15 if "холерик" in payload.temperament.lower() or "сангвиник" in payload.temperament.lower() or "сильная" in payload.nerve_type.lower() else 0.95
 
-    else: # Прочие общеразвивающие виды
-        raw_skill = (p.speed + p.strength + p.coordination + p.speed_strength + p.flexibility + p.endurance) / 6.0
+    # Резервный расчет для любых остальных прочих видов
+    else:
+        raw_skill = p.coordination * 0.30 + p.speed * 0.25 + p.endurance * 0.25 + p.strength * 0.20
         age_weight = 1.00
         nerve_weight = 1.00
 
-    # Рассчитываем итоговый нормализованный балл
-    final_score_raw = raw_skill * 10.0 * age_weight * nerve_weight
-    final_score = min(98, max(55, int(final_score_raw)))
+    # 4. Итоговый расчет совместимости по нашей модели (дифференцированная шкала 55 - 98%)
+    model_score = (raw_skill * 8.2) * age_weight * nerve_weight
+    final_score = min(98, max(55, int(model_score)))
 
-    # Статус зачисления по возрасту
+    # Статусная плашка
     sog_age = sport.get("sog_age")
     if payload.age >= sport["np1_age"]:
         status_note = f"Рекомендуется зачисление на этап НП1 (с {sport['np1_age']} лет)"
@@ -295,9 +314,6 @@ def calculate_sport_score(sport: dict, p: PhysicalSkills, payload: AthletePayloa
     }
 
 
-# ==========================================
-# ЭНДПОИНТЫ API
-# ==========================================
 @app.get("/health")
 async def health_check():
     return JSONResponse(content={"status": "ok", "service": "STAS Engine Online"})
@@ -331,10 +347,9 @@ async def analyze_athlete(payload: AthletePayload):
     temp_str = temp_ru_map.get(payload.temperament, payload.temperament)
     p = payload.physical or PhysicalSkills()
 
-    # Динамическая загрузка из Excel
     langepas_sports, other_registry_sports = load_sports_from_excel()
 
-    # 1. Расчет для секций Лангепаса
+    # Расчет по модели для Лангепаса
     langepas_scores = []
     for s in langepas_sports:
         res = calculate_sport_score(s, p, payload, predicted_height)
@@ -344,7 +359,7 @@ async def analyze_athlete(payload: AthletePayload):
     langepas_scores.sort(key=lambda x: x["score"], reverse=True)
     top_sports = langepas_scores[:4]
 
-    # 2. Расчет для прочих видов спорта
+    # Расчет по той же модели для всех прочих видов спорта РФ
     other_scores = []
     for s in other_registry_sports:
         res = calculate_sport_score(s, p, payload, predicted_height)
@@ -354,7 +369,6 @@ async def analyze_athlete(payload: AthletePayload):
     other_scores.sort(key=lambda x: x["score"], reverse=True)
     other_top_sports = other_scores[:3]
 
-    # 3. Промпт для GigaChat
     user_prompt = (
         f"Проанализируй комплексный научно-методический профиль ребенка (с учетом исследований ХМАО-Югры 2024 г.):\n"
         f"- Имя: {payload.full_name}, Возраст: {payload.age} лет, Пол: {'Мальчик' if payload.sex == 'male' else 'Девочка'}\n"
