@@ -5,19 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- Официальное подключение SDK VK Bridge -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
     <script>
         (function() {
             function initVK() {
                 if (window.vkBridge) {
-                    window.vkBridge.send("VKWebAppInit")
-                        .then(function(data) {
-                            console.log("[VK Bridge] Инициализация успешна:", data);
-                        })
-                        .catch(function(err) {
-                            console.warn("[VK Bridge] Ошибка инициализации:", err);
-                        });
+                    window.vkBridge.send("VKWebAppInit").catch(function(err) {
+                        console.warn("[VK Bridge] Ошибка:", err);
+                    });
                 }
             }
             if (document.readyState === "loading") {
@@ -28,12 +23,11 @@
         })();
     </script>
 
-    <link rel="stylesheet" href="style.css?v=4.0">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="style.css?v=10.0">
 </head>
 <body>
     <div class="app-container">
-        <!-- Шапка приложения -->
+        <!-- Шапка -->
         <header class="main-header">
             <div class="header-content">
                 <img src="logo.png" alt="СШОР Академия спорта" class="logo-img" onerror="this.style.display='none'">
@@ -60,7 +54,7 @@
         <!-- ЭКРАН 2: Пошаговый Квиз -->
         <div id="quizScreen" class="card-screen hidden">
             <div class="progress-bar-container">
-                <div class="step-label" id="stepIndicator">Шаг 1 из 8</div>
+                <div class="step-label" id="stepIndicator">Шаг 1 из 14</div>
                 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
             </div>
             <div id="questionContainer" class="question-container"></div>
@@ -73,26 +67,26 @@
         <div id="reactionScreen" class="card-screen hidden">
             <div class="tapping-header">
                 <h2>⚡ Тест на сенсомоторную реакцию</h2>
-                <p>Дождитесь, пока круг станет <b>ЗЕЛЕНЫМ</b>, и кликните по нему как можно быстрее!</p>
+                <p>Нажмите "НАЧАТЬ ТЕСТ", дождитесь, пока круг станет <b>ЗЕЛЕНЫМ</b>, и кликните по нему как можно быстрее!</p>
             </div>
             <div id="reactionBox" class="reaction-target-box" onclick="handleReactionClick()">
-                <span id="reactionPrompt">Нажмите "СТАРТ ТЕСТА РЕАКЦИИ"</span>
+                <span id="reactionPrompt">Нажмите кнопку ниже для старта</span>
             </div>
             <button type="button" id="startReactionBtn" class="btn-primary" onclick="startReactionTest()">🚀 НАЧАТЬ ТЕСТ РЕАКЦИИ</button>
         </div>
 
-        <!-- ЭКРАН 4: Теппинг-тест Ильина -->
+        <!-- ЭКРАН 4: Теппинг-тест -->
         <div id="tappingScreen" class="card-screen hidden">
             <div class="tapping-header">
                 <h2>⏱️ Теппинг-тест Е.П. Ильина</h2>
-                <p>Определяем силу и лабильность нервной системы. Нажимайте на кнопку как можно быстрее в течение <b>30 секунд</b>!</p>
+                <p>Определяем силу нервной системы. Нажмите "НАЧАТЬ ТЕСТ", а затем кликайте по области ниже максимально быстро в течение <b>30 секунд</b>!</p>
             </div>
             <div class="tapping-timer-box">
                 <div class="timer-value" id="tapTimer">30</div>
                 <div class="timer-label">секунд осталось</div>
             </div>
-            <div id="tapArea" class="tap-button-zone" onclick="registerTap()">
-                <div id="tapPromptText" class="tap-prompt">Нажмите "НАЧАТЬ ТЕСТ", затем кликайте сюда максимально быстро!</div>
+            <div id="tapArea" class="tap-button-zone" onclick="registerTap(event)">
+                <div id="tapPromptText" class="tap-prompt">Нажмите кнопку ниже, затем кликайте сюда!</div>
                 <div id="tapCountDisplay" class="tap-count-big">0</div>
             </div>
             <button type="button" id="startTapBtn" class="btn-primary" onclick="startTappingTest()">🚀 НАЧАТЬ ТЕСТ (30 сек)</button>
@@ -145,22 +139,25 @@
                     </div>
                 </div>
 
+                <!-- БЛОК 1: СЕКЦИИ ЛАНГЕПАСА -->
                 <div class="dashboard-recommendations-section">
-                    <h2 class="section-title">📐 Математический расчёт совместимости с секциями</h2>
-                    <div class="category-block">
-                        <h3 class="cat-subtitle cat-recommended">🏆 Рекомендуемые направления</h3>
-                        <div id="recommendedGrid" class="cards-grid"></div>
-                    </div>
+                    <h2 class="section-title">📐 Математический расчёт совместимости с секциями Лангепаса</h2>
+                    <div id="recommendedGrid" class="cards-grid"></div>
                 </div>
 
-                <div class="disclaimer-note" style="margin-top: 16px; padding: 12px; background: #fffbe0; border: 1px solid #ffe58f; border-radius: 10px; font-size: 11px; color: #855900; text-align: center;">
-                    <b>* Примечание:</b> Результаты данного тестирования носят исключительно рекомендательный характер.
+                <!-- БЛОК 2: ПРОЧИЕ ВИДЫ СПОРТА ИЗ РЕЕСТРА -->
+                <div class="dashboard-recommendations-section" style="margin-top: 25px;">
+                    <h2 class="section-title" style="color: #7c3aed;">🌐 Другие перспективные виды спорта (Реестр РФ)</h2>
+                    <div id="otherRecommendedGrid" class="cards-grid"></div>
+                </div>
+
+                <div class="disclaimer-note">
+                    <b>* Примечание:</b> Результаты данного тестирования носят исключительно рекомендательный характер, сформированы на основе вероятностных математических моделей и не являются официальным медицинским или педагогическим заключением.
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Скрипт с версией v=4.0 для полного сброса закэшированного JS -->
-    <script src="app.js?v=4.0"></script>
+    <script src="app.js?v=10.0"></script>
 </body>
 </html>

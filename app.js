@@ -1,51 +1,76 @@
 // ==========================================
-// 1. КОНФИГУРАЦИЯ И ГЛОБАЛЬНОЕ СОСТОЯНИЕ
+// 1. КОНФИГУРАЦИЯ И СОСТОЯНИЕ
 // ==========================================
 
-const API_URL = "https://oven-mockup-chase.ngrok-free.dev";
+const API_URL = "http://127.0.0.1:8000";
 
 let currentQuizStep = 0;
 let reactionStartTime = 0;
 let reactionTimer = null;
+let reactionActive = false;
+
 let tappingTimer = null;
 let tapCount = 0;
 let tappingTimeLeft = 30;
+let tappingActive = false;
 
 let userAnswers = {
-    full_name: "Юный спортсмен",
+    full_name: "",
     birth_date: "15.05.2016",
     sex: "female",
-    height_cm: 116,
-    weight_kg: 24,
+    height_cm: 125,
+    weight_kg: 25,
     father_height_cm: 178,
     mother_height_cm: 165,
     physical: {
-        speed: 5, strength: 5, coordination: 5,
-        speed_strength: 5, flexibility: 5, endurance: 5
+        speed: 6, strength: 6, coordination: 6,
+        speed_strength: 6, flexibility: 6, endurance: 6
     },
     temperament: "sanguine",
     reaction_ms: 300,
     tapping_test: { nerve_type: "Стабильная НС" }
 };
 
+const skillOptions = [
+    { label: "Ниже среднего / Требует развития", value: 3 },
+    { label: "Средний уровень / Как у большинства сверстников", value: 6 },
+    { label: "Высокий уровень / Выделяется среди ровесников", value: 8 },
+    { label: "Выдающийся результат / Отличная подготовка", value: 10 }
+];
+
 const quizQuestions = [
-    { title: "ФИО Ребенка", field: "full_name", type: "text", default: "Иван Иванов" },
-    { title: "Дата рождения (ДД.ММ.ГГГГ)", field: "birth_date", type: "date_text", default: "15.05.2016" },
-    { title: "Пол", field: "sex", type: "select", options: [{l: "Женский", v: "female"}, {l: "Мужской", v: "male"}] },
+    { title: "ФИО Ребенка", field: "full_name", type: "text", placeholder: "Введите ФИО ребенка" },
+    { title: "Дата рождения (ДД.ММ.ГГГГ)", field: "birth_date", type: "date_text", placeholder: "15.05.2016" },
+    { title: "Пол ребенка", field: "sex", type: "gender_cards" },
     { title: "Рост ребенка (см)", field: "height_cm", type: "number", default: 125 },
     { title: "Вес ребенка (кг)", field: "weight_kg", type: "number", default: 25 },
     { title: "Рост отца (см)", field: "father_height_cm", type: "number", default: 178 },
     { title: "Рост матери (см)", field: "mother_height_cm", type: "number", default: 165 },
-    { title: "Темперамент", field: "temperament", type: "select", options: [
-        {l: "Сангвиник (живой, подвижный)", v: "sanguine"},
-        {l: "Холерик (быстрый, порывистый)", v: "choleric"},
-        {l: "Флегматик (неспешный, спокойный)", v: "phlegmatic"},
-        {l: "Меланхолик (склонный к переживаниям)", v: "melancholic"}
+
+    { title: "Скорость и быстрота движений", field: "speed", subfield: "physical", type: "cards_skill" },
+    { title: "Сила и мышечное усилие", field: "strength", subfield: "physical", type: "cards_skill" },
+    { title: "Координация и ловкость", field: "coordination", subfield: "physical", type: "cards_skill" },
+    { title: "Скоростно-силовые качества (прыгучесть)", field: "speed_strength", subfield: "physical", type: "cards_skill" },
+    { title: "Гибкость и подвижность суставов", field: "flexibility", subfield: "physical", type: "cards_skill" },
+    { title: "Выносливость при долгих нагрузках", field: "endurance", subfield: "physical", type: "cards_skill" },
+
+    { title: "Темперамент и поведение ребенка", field: "temperament", type: "cards_options", options: [
+        { label: "Сангвиник (живой, подвижный, общительный)", value: "sanguine" },
+        { label: "Холерик (быстрый, импульсивный, энергичный)", value: "choleric" },
+        { label: "Флегматик (спокойный, хладнокровный, упрямый)", value: "phlegmatic" },
+        { label: "Меланхолик (чуткий, ранимый, сдержанный)", value: "melancholic" }
     ]}
 ];
 
+const temperamentRu = {
+    sanguine: "Сангвиник",
+    choleric: "Холерик",
+    phlegmatic: "Флегматик",
+    melancholic: "Меланхолик"
+};
+
 // ==========================================
-// 2. ИНИЦИАЛИЗАЦИЯ И ПРОВЕРКА СВЯЗИ
+// 2. ИНИЦИАЛИЗАЦИЯ И СВЯЗЬ
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     checkApiConnection();
@@ -54,13 +79,13 @@ document.addEventListener("DOMContentLoaded", () => {
 async function checkApiConnection() {
     const statusEl = document.getElementById("apiStatus");
     try {
-        const res = await fetch(`${API_URL}/health`, { method: "GET", headers: { "ngrok-skip-browser-warning": "true" } });
+        const res = await fetch(`${API_URL}/health`, { method: "GET" });
         if (res.ok && statusEl) {
             statusEl.textContent = "STAS API: Подключено";
             statusEl.classList.add("connected");
         }
     } catch (e) {
-        console.log("Health check skipped:", e);
+        console.log("Health check error:", e);
     }
 }
 
@@ -80,10 +105,11 @@ function showScreen(screenId) {
 }
 
 // ==========================================
-// 3. ПОШАГОВЫЙ КВИЗ
+// 3. УПРАВЛЕНИЕ КВИЗОМ
 // ==========================================
 function startQuiz() {
     currentQuizStep = 0;
+    userAnswers.full_name = ""; // Очищаем имя при новом запуске
     showScreen("quizScreen");
     renderQuestion();
 }
@@ -99,14 +125,38 @@ function renderQuestion() {
     if (progressFill) progressFill.style.width = `${((currentQuizStep + 1) / quizQuestions.length) * 100}%`;
     if (prevBtn) prevBtn.style.display = currentQuizStep > 0 ? "inline-block" : "none";
 
+    let currentValue = q.subfield ? userAnswers[q.subfield][q.field] : userAnswers[q.field];
+
     let inputHtml = "";
     if (q.type === "date_text") {
-        inputHtml = `<input type="text" id="quizInput" class="quiz-input" inputmode="numeric" pattern="[0-9.]*" placeholder="ДД.ММ.ГГГГ" maxlength="10" value="${userAnswers[q.field] || q.default || ''}" oninput="formatDateInput(this)">`;
+        inputHtml = `<input type="text" id="quizInput" class="quiz-input" inputmode="numeric" placeholder="${q.placeholder || 'ДД.ММ.ГГГГ'}" maxlength="10" value="${currentValue || ''}" oninput="formatDateInput(this)">`;
     } else if (q.type === "text" || q.type === "number") {
-        inputHtml = `<input type="${q.type}" id="quizInput" class="quiz-input" value="${userAnswers[q.field] || q.default || ''}">`;
-    } else if (q.type === "select") {
-        const options = q.options.map(o => `<option value="${o.v}" ${userAnswers[q.field] === o.v ? 'selected' : ''}>${o.l}</option>`).join('');
-        inputHtml = `<select id="quizInput" class="quiz-select">${options}</select>`;
+        inputHtml = `<input type="${q.type}" id="quizInput" class="quiz-input" placeholder="${q.placeholder || ''}" value="${currentValue || ''}">`;
+    } else if (q.type === "gender_cards") {
+        const activeSex = userAnswers.sex || "female";
+        inputHtml = `
+            <div class="cards-select-grid">
+                <div class="select-card ${activeSex === 'female' ? 'active' : ''}" onclick="selectCardOption('sex', 'female')">👧 Девочка</div>
+                <div class="select-card ${activeSex === 'male' ? 'active' : ''}" onclick="selectCardOption('sex', 'male')">👦 Мальчик</div>
+            </div>
+            <input type="hidden" id="quizInput" value="${activeSex}">
+        `;
+    } else if (q.type === "cards_skill") {
+        const currentScore = userAnswers.physical[q.field] || 6;
+        inputHtml = `<div class="cards-select-grid">` +
+            skillOptions.map(opt => `
+                <div class="select-card ${currentScore === opt.value ? 'active' : ''}" onclick="selectSkillOption('${q.field}', ${opt.value})">
+                    ${opt.label}
+                </div>
+            `).join('') + `</div><input type="hidden" id="quizInput" value="${currentScore}">`;
+    } else if (q.type === "cards_options") {
+        const curTemp = userAnswers.temperament || "sanguine";
+        inputHtml = `<div class="cards-select-grid">` +
+            q.options.map(opt => `
+                <div class="select-card ${curTemp === opt.value ? 'active' : ''}" onclick="selectCardOption('${q.field}', '${opt.value}')">
+                    ${opt.label}
+                </div>
+            `).join('') + `</div><input type="hidden" id="quizInput" value="${curTemp}">`;
     }
 
     container.innerHTML = `
@@ -114,6 +164,16 @@ function renderQuestion() {
         <div class="input-wrapper">${inputHtml}</div>
         <button type="button" class="btn-primary" style="margin-top:20px;" onclick="nextStep()">Далее ➔</button>
     `;
+}
+
+function selectCardOption(field, value) {
+    userAnswers[field] = value;
+    renderQuestion();
+}
+
+function selectSkillOption(field, value) {
+    userAnswers.physical[field] = value;
+    renderQuestion();
 }
 
 function formatDateInput(input) {
@@ -131,7 +191,7 @@ function formatDateInput(input) {
 function saveCurrentAnswer() {
     const q = quizQuestions[currentQuizStep];
     const input = document.getElementById("quizInput");
-    if (input && q) {
+    if (input && q && (q.type === "text" || q.type === "number" || q.type === "date_text")) {
         let val = input.value;
         if (q.type === "number") val = parseFloat(val) || 0;
         userAnswers[q.field] = val;
@@ -145,6 +205,7 @@ function nextStep() {
         renderQuestion();
     } else {
         showScreen("reactionScreen");
+        resetReactionTestUI();
     }
 }
 
@@ -157,9 +218,25 @@ function prevStep() {
 }
 
 // ==========================================
-// 4. ТЕСТ НА РЕАКЦИЮ
+// 4. ТЕСТ НА СЕНСОМОТОРНУЮ РЕАКЦИЮ
 // ==========================================
+function resetReactionTestUI() {
+    if (reactionTimer) clearTimeout(reactionTimer);
+    reactionStartTime = 0;
+    reactionActive = false;
+
+    const box = document.getElementById("reactionBox");
+    const prompt = document.getElementById("reactionPrompt");
+    const btn = document.getElementById("startReactionBtn");
+
+    if (box) box.style.background = "#0077ff";
+    if (prompt) prompt.textContent = "Нажмите кнопку ниже для старта";
+    if (btn) btn.style.display = "inline-block";
+}
+
 function startReactionTest() {
+    if (reactionTimer) clearTimeout(reactionTimer);
+
     const box = document.getElementById("reactionBox");
     const prompt = document.getElementById("reactionPrompt");
     const btn = document.getElementById("startReactionBtn");
@@ -167,8 +244,10 @@ function startReactionTest() {
     if (btn) btn.style.display = "none";
     box.style.background = "#ff4d4f";
     prompt.textContent = "Ждите зеленый цвет...";
+    reactionActive = true;
+    reactionStartTime = 0;
 
-    const delay = Math.floor(Math.random() * 3000) + 2000;
+    const delay = Math.floor(Math.random() * 2500) + 1500;
     reactionTimer = setTimeout(() => {
         box.style.background = "#52c41a";
         prompt.textContent = "ЖМИ СКОРЕЕ!";
@@ -177,36 +256,61 @@ function startReactionTest() {
 }
 
 function handleReactionClick() {
+    if (!reactionActive) return;
+
     const box = document.getElementById("reactionBox");
     const prompt = document.getElementById("reactionPrompt");
     const btn = document.getElementById("startReactionBtn");
 
     if (!reactionStartTime) {
         clearTimeout(reactionTimer);
+        reactionActive = false;
         box.style.background = "#faad14";
-        prompt.textContent = "Слишком рано! Нажмите старт снова.";
+        prompt.textContent = "Слишком рано! Нажмите кнопку снова.";
         if (btn) btn.style.display = "inline-block";
         return;
     }
 
     const diff = Date.now() - reactionStartTime;
     userAnswers.reaction_ms = diff;
-    reactionStartTime = 0;
+    reactionActive = false;
 
-    box.style.background = "#1890ff";
-    prompt.textContent = `Ваше время реакции: ${diff} мс! Переходим дальше...`;
+    box.style.background = "#0077ff";
+    prompt.textContent = `Ваше время реакции: ${diff} мс! Отлично!`;
 
     setTimeout(() => {
         showScreen("tappingScreen");
-    }, 1500);
+        resetTappingTestUI();
+    }, 1200);
 }
 
 // ==========================================
 // 5. ТЕППИНГ-ТЕСТ ИЛЬИНА
 // ==========================================
-function startTappingTest() {
+function resetTappingTestUI() {
+    if (tappingTimer) clearInterval(tappingTimer);
     tapCount = 0;
     tappingTimeLeft = 30;
+    tappingActive = false;
+
+    const countEl = document.getElementById("tapCountDisplay");
+    const timerEl = document.getElementById("tapTimer");
+    const btn = document.getElementById("startTapBtn");
+    const promptText = document.getElementById("tapPromptText");
+
+    if (countEl) countEl.textContent = "0";
+    if (timerEl) timerEl.textContent = "30";
+    if (btn) btn.style.display = "inline-block";
+    if (promptText) promptText.textContent = "Нажмите кнопку ниже, затем кликайте сюда!";
+}
+
+function startTappingTest() {
+    if (tappingTimer) clearInterval(tappingTimer);
+
+    tapCount = 0;
+    tappingTimeLeft = 30;
+    tappingActive = true;
+
     const countEl = document.getElementById("tapCountDisplay");
     const timerEl = document.getElementById("tapTimer");
     const btn = document.getElementById("startTapBtn");
@@ -223,16 +327,23 @@ function startTappingTest() {
 
         if (tappingTimeLeft <= 0) {
             clearInterval(tappingTimer);
+            tappingActive = false;
             finishTappingTest();
         }
     }, 1000);
 }
 
-function registerTap() {
-    if (tappingTimeLeft > 0 && tappingTimeLeft < 30) {
-        tapCount++;
-        const countEl = document.getElementById("tapCountDisplay");
-        if (countEl) countEl.textContent = tapCount;
+function registerTap(event) {
+    if (!tappingActive) return;
+
+    tapCount++;
+    const countEl = document.getElementById("tapCountDisplay");
+    if (countEl) countEl.textContent = tapCount;
+
+    const tapArea = document.getElementById("tapArea");
+    if (tapArea) {
+        tapArea.classList.add("tap-active");
+        setTimeout(() => tapArea.classList.remove("tap-active"), 80);
     }
 }
 
@@ -248,7 +359,7 @@ async function finishTappingTest() {
 }
 
 // ==========================================
-// 6. ОТПРАВКА В FASTAPI И ВЫВОД РЕЗУЛЬТАТОВ
+// 6. ОТПРАВКА В БЭКЕНД И ОТРИСОВКА ДАШБОРДА
 // ==========================================
 function calculateAge(birthDateString) {
     if (!birthDateString) return 8;
@@ -275,12 +386,15 @@ async function fetchServerGigaChatAI() {
     const subEl = document.getElementById("resChildAgeSex");
     const aiTextEl = document.getElementById("resAiText");
 
-    if (nameEl) nameEl.textContent = userAnswers.full_name;
+    updateSkillBars();
+
+    const displayName = userAnswers.full_name.trim() || "Юный спортсмен";
+    if (nameEl) nameEl.textContent = displayName;
     if (subEl) subEl.textContent = `${userAnswers.height_cm} см | ${userAnswers.weight_kg} кг`;
     if (aiTextEl) aiTextEl.innerHTML = "<p style='color: #0077ff; font-weight: bold;'>Бельчонок СТАС проводит 4-компонентный расчёт...</p>";
 
     const payload = {
-        full_name: String(userAnswers.full_name),
+        full_name: String(displayName),
         age: parseInt(calculateAge(userAnswers.birth_date)),
         sex: String(userAnswers.sex),
         height_cm: parseFloat(userAnswers.height_cm),
@@ -296,11 +410,7 @@ async function fetchServerGigaChatAI() {
     try {
         const response = await fetch(`${API_URL}/api/analyze`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "ngrok-skip-browser-warning": "true",
-                "Bypass-Tunnel-Reminder": "true"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
 
@@ -317,48 +427,110 @@ async function fetchServerGigaChatAI() {
     } catch (e) {
         console.error("Ошибка API:", e);
         if (aiTextEl) {
-            aiTextEl.innerHTML = "<div style='color: red; padding: 10px;'>Ошибка связи с бэкендом. Проверьте watchdog.bat.</div>";
+            aiTextEl.innerHTML = "<div style='color: red; padding: 10px;'>Ошибка связи с сервером.</div>";
         }
     }
 }
 
+function updateSkillBars() {
+    const p = userAnswers.physical;
+    const updateBar = (valId, fillId, val) => {
+        const vEl = document.getElementById(valId);
+        const fEl = document.getElementById(fillId);
+        const percent = Math.round((val / 10) * 100);
+        if (vEl) vEl.textContent = `${percent}%`;
+        if (fEl) fEl.style.width = `${percent}%`;
+    };
+
+    updateBar("barSpeedVal", "barSpeedFill", p.speed);
+    updateBar("barStrengthVal", "barStrengthFill", p.strength);
+    updateBar("barCoordVal", "barCoordFill", p.coordination);
+    updateBar("barSpeedStrengthVal", "barSpeedStrengthFill", p.speed_strength);
+    updateBar("barFlexVal", "barFlexFill", p.flexibility);
+    updateBar("barEnduranceVal", "barEnduranceFill", p.endurance);
+}
+
 function renderDashboard(data) {
     const gridEl = document.getElementById("recommendedGrid");
+    const otherGridEl = document.getElementById("otherRecommendedGrid");
     const targetHeightEl = document.getElementById("resTargetHeightVal");
     const heightEl = document.getElementById("resHeightVal");
     const weightEl = document.getElementById("resWeightVal");
+    const bmiEl = document.getElementById("resBmiVal");
     const reactionEl = document.getElementById("resReactionVal");
     const tempEl = document.getElementById("resTemperamentVal");
     const tapEl = document.getElementById("resTappingVal");
 
+    const heightM = userAnswers.height_cm / 100;
+    const bmi = (userAnswers.weight_kg / (heightM * heightM)).toFixed(1);
+
     if (heightEl) heightEl.textContent = `${userAnswers.height_cm} см`;
     if (weightEl) weightEl.textContent = `${userAnswers.weight_kg} кг`;
+    if (bmiEl) bmiEl.textContent = `${bmi} кг/м²`;
     if (reactionEl) reactionEl.textContent = `${userAnswers.reaction_ms} мс`;
-    if (tempEl) tempEl.textContent = userAnswers.temperament;
+    if (tempEl) tempEl.textContent = temperamentRu[userAnswers.temperament] || userAnswers.temperament;
     if (tapEl) tapEl.textContent = userAnswers.tapping_test.nerve_type;
 
     if (targetHeightEl && data.predicted_adult_height) {
         targetHeightEl.textContent = `${data.predicted_adult_height} см`;
     }
 
-    if (!gridEl || !data.top_sports) return;
+    if (gridEl && data.top_sports) {
+        gridEl.innerHTML = "";
+        data.top_sports.forEach((item, index) => {
+            let strokeColor = "#0077ff";
+            if (item.status_note.includes("НП1")) strokeColor = "#10b981";
+            if (item.status_note.includes("Ранний возраст")) strokeColor = "#f59e0b";
 
-    gridEl.innerHTML = "";
-    data.top_sports.forEach((item, index) => {
-        const card = document.createElement("div");
-        card.style.cssText = "background: #fff; border-left: 5px solid #0077ff; padding: 14px; margin-bottom: 12px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);";
-        card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h4 style="margin: 0; color: #1e293b; font-size: 16px;">#${index + 1} ${item.sport_name}</h4>
-                <span style="background: #0077ff; color: #fff; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 14px;">${item.score}%</span>
-            </div>
-            <p style="margin: 6px 0 0 0; font-size: 13px; color: #64748b;">
-                <strong>Организация:</strong> ${item.org}<br>
-                <strong>Статус:</strong> ${item.status_note}
-            </p>
-        `;
-        gridEl.appendChild(card);
-    });
+            const card = document.createElement("div");
+            card.className = "recommendation-card";
+            card.style.borderLeftColor = strokeColor;
+            card.innerHTML = `
+                <div class="card-left">
+                    <div class="circle-chart">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <path class="circle" stroke="${strokeColor}" stroke-dasharray="${item.score}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <text x="18" y="20.35" class="percentage">${item.score}%</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="card-right">
+                    <h4 class="rec-title">#${index + 1} ${item.sport_name}</h4>
+                    <p class="rec-org"><strong>Организация:</strong> ${item.org}</p>
+                    <p class="rec-note"><strong>Статус:</strong> ${item.status_note}</p>
+                </div>
+            `;
+            gridEl.appendChild(card);
+        });
+    }
+
+    if (otherGridEl && data.other_top_sports) {
+        otherGridEl.innerHTML = "";
+        data.other_top_sports.forEach((item, index) => {
+            const strokeColor = "#7c3aed";
+
+            const card = document.createElement("div");
+            card.className = "recommendation-card other-card";
+            card.style.borderLeftColor = strokeColor;
+            card.innerHTML = `
+                <div class="card-left">
+                    <div class="circle-chart">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <path class="circle" stroke="${strokeColor}" stroke-dasharray="${item.score}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <text x="18" y="20.35" class="percentage">${item.score}%</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="card-right">
+                    <h4 class="rec-title">#${index + 1} ${item.sport_name}</h4>
+                    <p class="rec-note"><strong>Статус:</strong> ${item.status_note}</p>
+                </div>
+            `;
+            otherGridEl.appendChild(card);
+        });
+    }
 }
 
 function restartQuiz() {

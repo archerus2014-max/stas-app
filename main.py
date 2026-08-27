@@ -1,17 +1,20 @@
 import os
-import uuid
 import requests
 import urllib3
-import uvicorn
+import pandas as pd
+from typing import Optional, List, Dict, Tuple
 from fastapi import FastAPI, Request
+from fastapi.responses import PlainTextResponse, JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
+from dotenv import load_dotenv
+
+load_dotenv()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-app = FastAPI(title="Спортивный агент СТАС — Сервер с защищенной валидацией")
+app = FastAPI(title="STAS Sports Agent Engine")
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,206 +24,371 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.middleware("http")
-async def add_security_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["X-Frame-Options"] = "ALLOWALL"
-    response.headers["Content-Security-Policy"] = "frame-ancestors *;"
-    response.headers["Bypass-Tunnel-Reminder"] = "true"
-    return response
+GIGACHAT_CREDENTIALS = os.getenv("GIGACHAT_CREDENTIALS", "")
+VK_CONFIRMATION_CODE = os.getenv("VK_CONFIRMATION_CODE", "a23e9568")
+VK_SECRET_KEY = os.getenv("VK_SECRET_KEY", "f5b76090b2395159999dc866fd3e79b0")
 
-GIGACHAT_AUTH_KEY = "MDFhMDIyNmQtMDVlMC03NGIyLThhNzMtYjhiZmU2NGJhNmE2OmU1ZTViNDliLTZiMTctNGRhMS05MWQzLWU2ZjYyMWUyZTM4Zg=="
+# Чисто женские виды спорта
+FEMALE_ONLY_SPORTS = [
+    "художественная гимнастика",
+    "эстетическая гимнастика",
+    "синхронное плавание"
+]
 
-def get_gigachat_token():
+def clean_sport_name(name: str) -> str:
+    name = name.strip()
+    if name.endswith("(") or "мма" in name.lower():
+        if "мма" in name.lower():
+            return "Смешанное боевое единоборство (ММА)"
+    if name.lower() in ["грепплинг", "грэпплинг"]:
+        return "Грэпплинг"
+    if len(name) > 1:
+        name = name[0].upper() + name[1:]
+    return name
+
+def load_sports_from_excel() -> Tuple[List[Dict], List[Dict]]:
+    excel_files = ["Langsport_НП1_возраст.xls", "Langsport_НП1_возраст_2.xls", "C:\\STAS\\Langsport_НП1_возраст.xls"]
+    target_file = None
+    for f in excel_files:
+        if os.path.exists(f):
+            target_file = f
+            break
+
+    if not target_file:
+        print("[Excel Warning]: Файл Excel не найден.")
+        return [], []
+
     try:
-        url = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
-        payload = 'scope=GIGACHAT_API_PERS'
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json',
-            'RqUID': str(uuid.uuid4()),
-            'Authorization': f'Basic {GIGACHAT_AUTH_KEY}'
-        }
-        res = requests.post(url, headers=headers, data=payload, verify=False, timeout=8)
-        return res.json().get("access_token")
+        df = pd.read_excel(target_file)
+        langepas_sports = []
+        other_sports = []
+        
+        current_org = ""
+        is_other_section = False
+        lang_names = set()
+
+        for idx, row in df.iterrows():
+            sport_raw = str(row.iloc[1]).strip() if pd.notna(row.iloc[1]) else ""
+            np1_age = row.iloc[2] if len(row) > 2 else None
+            sog_age = row.iloc[3] if len(row) > 3 else None
+
+            if not sport_raw or sport_raw == "nan":
+                continue
+
+            if "Академия спорта" in sport_raw:
+                current_org = "СШОР «Академия спорта»"
+                is_other_section = False
+                continue
+            elif "СШ \"Лангепас\"" in sport_raw or 'СШ "Лангепас"' in sport_raw:
+                current_org = "СШ «Лангепас»"
+                is_other_section = False
+                continue
+            elif "СШ \"Дельфин\"" in sport_raw or 'СШ "Дельфин"' in sport_raw:
+                current_org = "СШ «Дельфин»"
+                is_other_section = False
+                continue
+            elif "Прочие виды спорта" in sport_raw:
+                current_org = ""
+                is_other_section = True
+                continue
+
+            np1_val = float(np1_age) if pd.notna(np1_age) else 7.0
+            sog_val = float(sog_age) if pd.notna(sog_age) else None
+            
+            clean_name = clean_sport_name(sport_raw)
+
+            item = {
+                "name": clean_name,
+                "org": current_org if not is_other_section else "",
+                "np1_age": int(np1_val),
+                "sog_age": int(sog_val) if sog_val else None
+            }
+
+            if is_other_section:
+                if clean_name.lower() not in lang_names:
+                    other_sports.append(item)
+            else:
+                langepas_sports.append(item)
+                lang_names.add(clean_name.lower())
+
+        return langepas_sports, other_sports
     except Exception as e:
-        print("[GigaChat Auth Error]:", e)
+        print(f"[Excel Read Error]: {e}")
+        return [], []
+
+
+class PhysicalSkills(BaseModel):
+    speed: int = 5
+    strength: int = 5
+    coordination: int = 5
+    speed_strength: int = 5
+    flexibility: int = 5
+    endurance: int = 5
+
+
+class AthletePayload(BaseModel):
+    full_name: str
+    age: int
+    sex: str
+    height_cm: float
+    weight_kg: float
+    father_height_cm: float
+    mother_height_cm: float
+    physical: Optional[PhysicalSkills] = None
+    temperament: str
+    reaction_ms: int
+    nerve_type: str
+
+
+# ==========================================
+# GIGACHAT ИНТЕГРАЦИЯ
+# ==========================================
+def get_gigachat_token(credentials: str) -> Optional[str]:
+    if not credentials:
+        return None
+    url = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
+        'RqUID': '6f0b016e-a740-4e1e-b83d-3382717077a8',
+        'Authorization': f'Basic {credentials}'
+    }
+    payload = {'scope': 'GIGACHAT_API_PERS'}
+    try:
+        response = requests.post(url, headers=headers, data=payload, verify=False, timeout=5)
+        if response.status_code == 200:
+            return response.json().get('access_token')
+    except Exception as e:
+        print(f"[GigaChat Token Error]: {e}")
+    return None
+
+
+def ask_gigachat(prompt_text: str, credentials: str) -> Optional[str]:
+    token = get_gigachat_token(credentials)
+    if not token:
         return None
 
-SPORT_PROFILES = {
-    "СПОРТИВНАЯ АКРОБАТИКА": {
-        "min_age": 7, "max_age": 16, "org": "СШОР «Академия спорта»", "category": "basic",
-        "w_phys": 0.40, "w_psycho": 0.30, "w_bmi": 0.15, "w_height": 0.15,
-        "preferred_temp": ["sanguine"], "max_bmi": 20.0, "height_pref": "low", "micro_offset": 3.2
-    },
-    "ПЛАВАНИЕ": {
-        "min_age": 7, "max_age": 70, "org": "СШ «Дельфин»", "category": "basic",
-        "w_phys": 0.35, "w_psycho": 0.25, "w_bmi": 0.20, "w_height": 0.20,
-        "preferred_temp": ["sanguine", "phlegmatic"], "height_pref": "high", "micro_offset": 2.8
-    },
-    "ПРЫЖКИ НА БАТУТЕ": {
-        "min_age": 7, "max_age": 18, "org": "СШОР «Академия спорта»", "category": "basic",
-        "w_phys": 0.40, "w_psycho": 0.30, "w_bmi": 0.15, "w_height": 0.15,
-        "preferred_temp": ["sanguine"], "max_bmi": 21.0, "height_pref": "medium", "micro_offset": 1.5
-    },
-    "БОКС": {
-        "min_age": 9, "max_age": 45, "org": "СШОР «Академия спорта»", "category": "combat",
-        "w_phys": 0.45, "w_psycho": 0.35, "w_bmi": 0.10, "w_height": 0.10,
-        "preferred_temp": ["choleric", "sanguine"], "nerve_pref": "Сильная", "micro_offset": 0.3
-    },
-    "ДЗЮДО": {
-        "min_age": 8, "max_age": 50, "org": "СШОР «Академия спорта»", "category": "combat",
-        "w_phys": 0.40, "w_psycho": 0.30, "w_bmi": 0.15, "w_height": 0.15,
-        "preferred_temp": ["phlegmatic", "sanguine"], "nerve_pref": "Сильная", "micro_offset": -0.5
-    },
-    "СТРЕЛЬБА ИЗ ЛУКА": {
-        "min_age": 10, "max_age": 65, "org": "СШОР «Академия спорта»", "category": "precision",
-        "w_phys": 0.20, "w_psycho": 0.50, "w_bmi": 0.15, "w_height": 0.15,
-        "preferred_temp": ["phlegmatic", "melancholic"], "nerve_pref": "Ровная", "micro_offset": 0.8
+    url = "https://gigachat.devices.sberbank.ru/api/v1/chat/completions"
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': f'Bearer {token}'
     }
-}
+    payload = {
+        "model": "GigaChat",
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "Ты — Бельчонок СТАС, спортивный агент СШОР «Академия спорта» г. Лангепас. "
+                    "Пиши экспертно, мотивирующе и лаконично. "
+                    "ОГРАНИЧЕНИЕ: Текст не более 1200-1500 символов (2-3 емких абзаца)! "
+                    "Учитывай возраст ребенка, сенситивные периоды развития, пол, "
+                    "типологию нервной системы по Теппинг-тесту Ильина и время реакции."
+                )
+            },
+            {"role": "user", "content": prompt_text}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 600
+    }
+    try:
+        response = requests.post(url, headers=headers, json=payload, verify=False, timeout=12)
+        if response.status_code == 200:
+            content = response.json()['choices'][0]['message']['content']
+            if len(content) > 1500:
+                content = content[:1490] + "..."
+            return content
+    except Exception as e:
+        print(f"[GigaChat Query Error]: {e}")
+    return None
 
-class PhysicalStats(BaseModel):
-    speed: Optional[int] = 5
-    strength: Optional[int] = 5
-    coordination: Optional[int] = 5
-    speed_strength: Optional[int] = 5
-    flexibility: Optional[int] = 5
-    endurance: Optional[int] = 5
 
-class AthleteRequest(BaseModel):
-    full_name: Optional[str] = "Юный спортсмен"
-    age: Optional[int] = 5
-    sex: Optional[str] = "female"
-    height_cm: Optional[float] = 116.0
-    weight_kg: Optional[float] = 24.0
-    father_height_cm: Optional[float] = 178.0
-    mother_height_cm: Optional[float] = 165.0
-    physical: Optional[PhysicalStats] = PhysicalStats()
-    temperament: Optional[str] = "sanguine"
-    reaction_ms: Optional[int] = 300
-    nerve_type: Optional[str] = "Стабильная НС"
+# ==========================================
+# ИНДИВИДУАЛЬНАЯ МАТЕМАТИЧЕСКАЯ МОДЕЛЬ ОТБОРА
+# ==========================================
+def calculate_sport_score(sport: dict, p: PhysicalSkills, payload: AthletePayload, predicted_height: float) -> Optional[dict]:
+    name = sport["name"]
+    name_low = name.lower()
 
-@app.get("/api/health")
-def health_check():
-    return {"status": "ok", "message": "Сервер СТАС работает"}
+    # 1. Строгий гендерный фильтр
+    if payload.sex == "male" and any(fem in name_low for fem in FEMALE_ONLY_SPORTS):
+        return None
+
+    # 2. Оценка качества реакции (шкала 1.0 - 10.0)
+    # Нормальная реакция 250-350мс
+    if payload.reaction_ms <= 220:
+        react_score = 10.0
+    elif payload.reaction_ms <= 280:
+        react_score = 8.0
+    elif payload.reaction_ms <= 350:
+        react_score = 6.0
+    else:
+        react_score = 4.0
+
+    # 3. Индивидуальный подсчет профиля навыков по видам спорта
+    if any(w in name_low for w in ["акробат", "батут", "гимнаст", "рок-н-ролл", "брейкинг", "аэробик"]):
+        raw_skill = p.coordination * 0.40 + p.flexibility * 0.35 + p.speed * 0.15 + p.speed_strength * 0.10
+        # Возрастной приоритет: идеальный возраст 5-8 лет
+        age_weight = 1.25 if payload.age <= 8 else (1.00 if payload.age <= 11 else 0.80)
+        nerve_weight = 1.20 if "слабая" in payload.nerve_type.lower() or "стабильная" in payload.nerve_type.lower() else 0.90
+
+    elif any(w in name_low for w in ["бокс", "дзюдо", "самбо", "борьб", "единоборств", "мма", "грэпплинг", "грепплинг", "тхэквондо", "муайтай", "каратэ", "рукопашн"]):
+        raw_skill = react_score * 0.30 + p.speed * 0.25 + p.strength * 0.25 + p.endurance * 0.20
+        # Возрастной приоритет: идеальный возраст 9-13 лет
+        age_weight = 0.70 if payload.age <= 7 else (1.20 if payload.age <= 12 else 1.10)
+        nerve_weight = 1.25 if "сильная" in payload.nerve_type.lower() else 0.85
+
+    elif any(w in name_low for w in ["лук", "шахмат", "стрельб", "дартс"]):
+        raw_skill = react_score * 0.40 + p.coordination * 0.40 + p.endurance * 0.20
+        # Возрастной приоритет: идеальный возраст 9+ лет
+        age_weight = 0.65 if payload.age <= 8 else 1.25
+        nerve_weight = 1.30 if "слабая" in payload.nerve_type.lower() or "стабильная" in payload.nerve_type.lower() else 0.75
+
+    elif any(w in name_low for w in ["тяжёлая атлетика", "пауэрлифт", "гирев", "силовой"]):
+        raw_skill = p.strength * 0.50 + p.speed_strength * 0.35 + p.endurance * 0.15
+        # Возрастной приоритет: НЕ рекомендовано до 10 лет
+        age_weight = 0.40 if payload.age <= 8 else (0.75 if payload.age <= 9 else 1.30)
+        nerve_weight = 1.20 if "сильная" in payload.nerve_type.lower() else 0.85
+
+    elif any(w in name_low for w in ["плаван", "лыжн", "биатлон", "бег", "велосипед", "конькобеж"]):
+        raw_skill = p.endurance * 0.45 + p.speed * 0.30 + p.coordination * 0.25
+        age_weight = 1.10 if payload.age >= 8 else 0.90
+        nerve_weight = 1.05
+
+    elif any(w in name_low for w in ["баскетбол", "волейбол"]):
+        raw_skill = p.speed_strength * 0.35 + p.coordination * 0.30 + p.speed * 0.20 + p.endurance * 0.15
+        # Бонус за высокий генетический рост
+        height_bonus = 1.25 if ((payload.sex == "male" and predicted_height >= 180) or (payload.sex == "female" and predicted_height >= 172)) else 0.90
+        raw_skill *= height_bonus
+        age_weight = 0.80 if payload.age <= 7 else 1.20
+        nerve_weight = 1.15 if "сильная" in payload.nerve_type.lower() or "сангвиник" in payload.temperament.lower() else 0.95
+
+    elif any(w in name_low for w in ["футбол", "хоккей", "теннис", "гандбол"]):
+        raw_skill = p.speed * 0.30 + p.coordination * 0.30 + p.speed_strength * 0.25 + react_score * 0.15
+        age_weight = 0.85 if payload.age <= 7 else 1.20
+        nerve_weight = 1.15 if "холерик" in payload.temperament.lower() or "сангвиник" in payload.temperament.lower() or "сильная" in payload.nerve_type.lower() else 0.95
+
+    else: # Прочие общеразвивающие виды
+        raw_skill = (p.speed + p.strength + p.coordination + p.speed_strength + p.flexibility + p.endurance) / 6.0
+        age_weight = 1.00
+        nerve_weight = 1.00
+
+    # Рассчитываем итоговый нормализованный балл
+    final_score_raw = raw_skill * 10.0 * age_weight * nerve_weight
+    final_score = min(98, max(55, int(final_score_raw)))
+
+    # Статус зачисления по возрасту
+    sog_age = sport.get("sog_age")
+    if payload.age >= sport["np1_age"]:
+        status_note = f"Рекомендуется зачисление на этап НП1 (с {sport['np1_age']} лет)"
+    elif sog_age and payload.age >= sog_age:
+        status_note = f"Рекомендуется зачисление в группу СОГ (ОФП) с {sog_age} лет"
+    else:
+        status_note = f"Ранний возраст: зачисление на НП1 с {sport['np1_age']} лет"
+
+    return {
+        "sport_name": name,
+        "score": final_score,
+        "org": sport["org"],
+        "status_note": status_note
+    }
+
+
+# ==========================================
+# ЭНДПОИНТЫ API
+# ==========================================
+@app.get("/health")
+async def health_check():
+    return JSONResponse(content={"status": "ok", "service": "STAS Engine Online"})
+
+
+@app.post("/vk/callback")
+async def vk_callback_handler(request: Request):
+    try:
+        data = await request.json()
+    except Exception:
+        return PlainTextResponse("ok")
+
+    if data.get("type") == "confirmation":
+        return PlainTextResponse(VK_CONFIRMATION_CODE)
+
+    return PlainTextResponse("ok")
+
 
 @app.post("/api/analyze")
-def analyze(data: AthleteRequest):
-    # Гарантированное преобразование типов для предотвращения ошибок расчёта
-    age = data.age or 5
-    height_cm = data.height_cm or 116.0
-    weight_kg = data.weight_kg or 24.0
-    father_h = data.father_height_cm or 178.0
-    mother_h = data.mother_height_cm or 165.0
-    sex = data.sex or "female"
-    full_name = data.full_name or "Спортсмен"
-    temperament = data.temperament or "sanguine"
-    reaction_ms = data.reaction_ms or 300
-    nerve_type = data.nerve_type or "Стабильная НС"
-    phys = data.physical or PhysicalStats()
+async def analyze_athlete(payload: AthletePayload):
+    gender_coef = 6.5 if payload.sex == "male" else -6.5
+    predicted_height = round(((payload.father_height_cm + payload.mother_height_cm) / 2) + gender_coef, 1)
 
-    height_m = height_cm / 100.0
-    bmi = round(weight_kg / (height_m * height_m), 1) if height_m > 0 else 18.0
-    modifier = 13.0 if sex == "male" else -13.0
-    predicted_adult_height = round((father_h + mother_h + modifier) / 2.0, 1)
+    height_m = payload.height_cm / 100.0
+    bmi = round(payload.weight_kg / (height_m * height_m), 1)
 
-    scored_sports = []
-    for sport_name, spec in SPORT_PROFILES.items():
-        p_speed = phys.speed or 5
-        p_strength = phys.strength or 5
-        p_coord = phys.coordination or 5
-        p_speed_strength = phys.speed_strength or 5
-        p_flex = phys.flexibility or 5
-        p_endurance = phys.endurance or 5
+    temp_ru_map = {
+        "sanguine": "Сангвиник", "choleric": "Холерик",
+        "phlegmatic": "Флегматик", "melancholic": "Меланхолик"
+    }
+    temp_str = temp_ru_map.get(payload.temperament, payload.temperament)
+    p = payload.physical or PhysicalSkills()
 
-        phys_avg = (p_speed + p_strength + p_coord + p_speed_strength + p_flex + p_endurance) / 6.0
-        k_phys = min(100.0, phys_avg * 10.0)
+    # Динамическая загрузка из Excel
+    langepas_sports, other_registry_sports = load_sports_from_excel()
 
-        k_psycho = 70.0
-        if temperament in spec["preferred_temp"]:
-            k_psycho += 15.0
-        if "nerve_pref" in spec and spec["nerve_pref"] in nerve_type:
-            k_psycho += 15.0
+    # 1. Расчет для секций Лангепаса
+    langepas_scores = []
+    for s in langepas_sports:
+        res = calculate_sport_score(s, p, payload, predicted_height)
+        if res:
+            langepas_scores.append(res)
 
-        k_bmi = 90.0 if bmi <= spec.get("max_bmi", 25.0) else 60.0
-        k_height = 95.0 if (spec.get("height_pref") == "high" and predicted_adult_height >= 175.0) else 75.0
+    langepas_scores.sort(key=lambda x: x["score"], reverse=True)
+    top_sports = langepas_scores[:4]
 
-        raw_score = (
-            (spec["w_phys"] * k_phys) + 
-            (spec["w_psycho"] * k_psycho) + 
-            (spec["w_bmi"] * k_bmi) + 
-            (spec["w_height"] * k_height) + 
-            spec["micro_offset"]
+    # 2. Расчет для прочих видов спорта
+    other_scores = []
+    for s in other_registry_sports:
+        res = calculate_sport_score(s, p, payload, predicted_height)
+        if res:
+            other_scores.append(res)
+
+    other_scores.sort(key=lambda x: x["score"], reverse=True)
+    other_top_sports = other_scores[:3]
+
+    # 3. Промпт для GigaChat
+    user_prompt = (
+        f"Проанализируй комплексный научно-методический профиль ребенка (с учетом исследований ХМАО-Югры 2024 г.):\n"
+        f"- Имя: {payload.full_name}, Возраст: {payload.age} лет, Пол: {'Мальчик' if payload.sex == 'male' else 'Девочка'}\n"
+        f"- Антропометрия: Рост {payload.height_cm} см, Вес {payload.weight_kg} кг, ИМТ {bmi}, Прогноз роста {predicted_height} см\n"
+        f"- Сенсомоторная реакция: {payload.reaction_ms} мс\n"
+        f"- Типология НС по Теппинг-тесту Ильина: {payload.nerve_type}\n"
+        f"- Темперамент: {temp_str}\n"
+        f"Сформируй ЕМКОЕ экспертное заключение (до 1500 символов, 2-3 абзаца). Объясни, как физиологические параметры, Теппинг-тест и пол ребенка определили его готовность к зачислению в секции Лангепаса."
+    )
+
+    ai_summary = ask_gigachat(user_prompt, GIGACHAT_CREDENTIALS)
+
+    if not ai_summary:
+        sex_str = "мальчика" if payload.sex == "male" else "девочки"
+        ai_summary = (
+            f"Привет! Я Бельчонок СТАС из СШОР «Академия спорта» г. Лангепас.\n\n"
+            f"Наш расчёт для {sex_str} {payload.full_name} ({payload.age} лет) завершён. "
+            f"Индекс массы тела составляет {bmi} кг/м², а генетический прогноз роста — около {predicted_height} см.\n\n"
+            f"Тип нервной системы по Теппинг-тесту Ильина ('{payload.nerve_type}') и показатели реакции ({payload.reaction_ms} мс) "
+            f"подтверждают отличную предрасположенность к физическим нагрузкам в рекомендуемых секциях города!"
         )
 
-        if age < 7:
-            if spec["category"] == "combat":
-                raw_score -= 25.0
-            elif spec["category"] == "precision":
-                raw_score -= 10.0
+    return JSONResponse(content={
+        "status": "success",
+        "predicted_adult_height": predicted_height,
+        "bmi": bmi,
+        "ai_text": ai_summary,
+        "top_sports": top_sports,
+        "other_top_sports": other_top_sports
+    })
 
-        final_score = round(min(98.0, max(35.0, raw_score)), 1)
-
-        if age < spec["min_age"]:
-            status_note = f"Базовое ОФП (Официальное зачисление в секцию с {spec['min_age']} лет по ФССП)"
-        elif age >= 18:
-            status_note = "Доступно для любительских и взрослых групп"
-        else:
-            status_note = "Рекомендуется к зачислению в спортивную школу"
-
-        scored_sports.append({
-            "sport_name": sport_name,
-            "score": final_score,
-            "status_note": status_note,
-            "org": spec["org"]
-        })
-
-    scored_sports.sort(key=lambda x: x["score"], reverse=True)
-    top3 = scored_sports[:3]
-
-    token = get_gigachat_token()
-    sports_str = ", ".join([s["sport_name"] for s in top3])
-    temp_ru = {"sanguine": "Сангвиник", "choleric": "Холерик", "phlegmatic": "Флегматик", "melancholic": "Меланхолик"}.get(temperament, temperament)
-
-    if token:
-        try:
-            headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': f'Bearer {token}'}
-            prompt = (
-                f"Ты спортивный агент Бельчонок СТАС из СШОР 'Академия спорта' г. Лангепас. "
-                f"Составь эмоциональное заключение для юного спортсмена по имени {full_name} ({age} лет). "
-                f"Показатели: ИМТ={bmi}, Реакция={reaction_ms} мс, Темперамент={temp_ru}, Нервная система={nerve_type}. "
-                f"Прогноз роста={predicted_adult_height} см. "
-                f"Рекомендуемые секции: {sports_str}. "
-                f"ПРАВИЛО: НЕ ИСПОЛЬЗУЙ символы решеток # и звёздочек *. Разбивай текст на короткие читаемые абзацы через пустые строки!"
-            )
-            body = {"model": "GigaChat", "messages": [{"role": "user", "content": prompt}], "temperature": 0.7}
-            res = requests.post("https://gigachat.devices.sberbank.ru/api/v1/chat/completions", headers=headers, json=body, verify=False, timeout=12)
-            ai_text = res.json()['choices'][0]['message']['content'].replace("#", "").replace("*", "")
-            return {"status": "success", "ai_text": ai_text, "top_sports": top3, "predicted_adult_height": predicted_adult_height}
-        except Exception as e:
-            print("[GigaChat Error]:", e)
-
-    fallback_text = (
-        f"Уважаемые родители спортсмена {full_name}!\n\n"
-        f"Бельчонок СТАС провел комплексный математический анализ данных ({age} лет, ИМТ {bmi}, реакция {reaction_ms} мс).\n\n"
-        f"Тип нервной системы ({nerve_type}) и темперамент ({temp_ru}) показывают отличный потенциал для гармоничного развития!\n\n"
-        f"Лучшие направления в г. Лангепас: {sports_str}. Ждем вас на тренировках!"
-    )
-    return {"status": "fallback", "ai_text": fallback_text, "top_sports": top3, "predicted_adult_height": predicted_adult_height}
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @app.get("/")
-def read_root():
-    return FileResponse(os.path.join(BASE_DIR, "index.html"))
+async def serve_index():
+    return FileResponse("index.html")
 
-@app.get("/{file_name:path}")
-def read_static(file_name: str):
-    file_path = os.path.join(BASE_DIR, file_name)
-    if os.path.isfile(file_path):
-        return FileResponse(file_path)
-    return FileResponse(os.path.join(BASE_DIR, "index.html"))
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+app.mount("/", StaticFiles(directory="."), name="static")
