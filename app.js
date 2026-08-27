@@ -2,7 +2,10 @@
 // 1. КОНФИГУРАЦИЯ И СОСТОЯНИЕ
 // ==========================================
 
-const API_URL = "http://127.0.0.1:8000";
+// Автоматическое определение URL сервера (локально или на Render)
+const API_URL = (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost")
+    ? "http://127.0.0.1:8000"
+    : "";
 
 let currentQuizStep = 0;
 let reactionStartTime = 0;
@@ -109,7 +112,7 @@ function showScreen(screenId) {
 // ==========================================
 function startQuiz() {
     currentQuizStep = 0;
-    userAnswers.full_name = ""; // Очищаем имя при новом запуске
+    userAnswers.full_name = "";
     showScreen("quizScreen");
     renderQuestion();
 }
