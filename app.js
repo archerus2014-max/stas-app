@@ -2,7 +2,6 @@
 // 1. КОНФИГУРАЦИЯ И СОСТОЯНИЕ
 // ==========================================
 
-// Автоматическое определение URL сервера (локально или на Render)
 const API_URL = (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost")
     ? "http://127.0.0.1:8000"
     : "";
@@ -73,12 +72,28 @@ const temperamentRu = {
 };
 
 // ==========================================
-// 2. ИНИЦИАЛИЗАЦИЯ И ИНТЕГРАЦИЯ VK BRIDGE
+// 2. ИНИЦИАЛИЗАЦИЯ И VK BRIDGE
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
+    initVkBridge();
     checkApiConnection();
-    initVkBridgeData();
 });
+
+function initVkBridge() {
+    if (window.vkBridge) {
+        window.vkBridge.send("VKWebAppInit")
+            .then(() => console.log("[VK Bridge] Подключен"))
+            .catch(err => console.warn("[VK Bridge] Ошибка:", err));
+
+        window.vkBridge.send('VKWebAppGetUserInfo')
+            .then((user) => {
+                if (user && user.first_name) {
+                    userAnswers.full_name = `${user.first_name} ${user.last_name}`;
+                }
+            })
+            .catch(() => {});
+    }
+}
 
 async function checkApiConnection() {
     const statusEl = document.getElementById("apiStatus");
@@ -90,22 +105,6 @@ async function checkApiConnection() {
         }
     } catch (e) {
         console.log("Health check error:", e);
-    }
-}
-
-// Получение профиля пользователя из ВКонтакте
-function initVkBridgeData() {
-    if (window.vkBridge) {
-        window.vkBridge.send('VKWebAppGetUserInfo')
-            .then((user) => {
-                if (user && user.first_name) {
-                    // Подставляем имя и фамилию пользователя из VK
-                    userAnswers.full_name = `${user.first_name} ${user.last_name}`;
-                }
-            })
-            .catch((error) => {
-                console.log("[VK Bridge] Получение профиля недоступно (веб-версия или отклонено пользователем):", error);
-            });
     }
 }
 
