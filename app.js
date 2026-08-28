@@ -1,15 +1,8 @@
 // ==========================================
-// 1. КОНФИГУРАЦИЯ И ИНИЦИАЛИЗАЦИЯ VK BRIDGE
+// 1. КОНФИГУРАЦИЯ И ИНИЦИАЛИЗАЦИЯ
 // ==========================================
 
 const API_URL = "https://stas-api.onrender.com";
-
-// Мгновенный отклик для скрытия синей заставки ВКонтакте
-if (window.vkBridge) {
-    window.vkBridge.send("VKWebAppInit")
-        .then(() => console.log("[STAS] VK Bridge Init SUCCESS"))
-        .catch((err) => console.error("[STAS] VK Bridge Init ERR", err));
-}
 
 let currentQuizStep = 0;
 let reactionStartTime = 0;
@@ -80,19 +73,27 @@ const temperamentRu = {
 // 2. ЗАГРУЗКА ДАННЫХ И ПРОВЕРКА СВЯЗИ
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
+    showScreen("welcomeScreen");
     fetchUserData();
     checkApiConnection();
 });
 
 function fetchUserData() {
     if (window.vkBridge) {
-        window.vkBridge.send('VKWebAppGetUserInfo')
-            .then((user) => {
-                if (user && user.first_name) {
-                    userAnswers.full_name = `${user.first_name} ${user.last_name}`;
-                }
-            })
-            .catch((e) => console.log("User info fetch mode:", e));
+        const timeout = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("VK Bridge Timeout")), 1200)
+        );
+
+        Promise.race([
+            window.vkBridge.send('VKWebAppGetUserInfo'),
+            timeout
+        ])
+        .then((user) => {
+            if (user && user.first_name) {
+                userAnswers.full_name = `${user.first_name} ${user.last_name}`;
+            }
+        })
+        .catch((e) => console.log("[STAS] User info bypassed:", e.message));
     }
 }
 
@@ -105,7 +106,7 @@ async function checkApiConnection() {
             statusEl.classList.add("connected");
         }
     } catch (e) {
-        console.log("Health check silent mode:", e);
+        console.log("[STAS] Health check silent mode:", e);
     }
 }
 
@@ -116,8 +117,10 @@ function showScreen(screenId) {
         if (el) {
             if (id === screenId) {
                 el.classList.remove("hidden");
+                el.style.display = "block";
             } else {
                 el.classList.add("hidden");
+                el.style.display = "none";
             }
         }
     });

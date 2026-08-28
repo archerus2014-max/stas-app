@@ -27,6 +27,15 @@ body {
     display: none !important;
 }
 
+.card-screen.hidden, 
+#resultsScreen.hidden {
+    display: none !important;
+}
+
+.card-screen:not(.hidden) {
+    display: block !important;
+}
+
 /* Шапка */
 .main-header {
     display: flex;

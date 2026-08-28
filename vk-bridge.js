@@ -1,1 +1,1 @@
-Redirecting to /@vkontakte/vk-bridge@3.0.2/dist/browser/vk-bridge.js
+Not found: /@vkontakte/vk-bridge@2.8.2/dist/browser/vk-bridge.js
