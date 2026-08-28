@@ -220,9 +220,6 @@ def ask_gigachat(prompt_text: str, credentials: str) -> Optional[str]:
     return None
 
 
-# ==========================================
-# УНИКАЛЬНЫЙ ИНДИВИДУАЛЬНЫЙ РАСЧЕТ ДЛЯ КАЖДОГО ВИДА СПОРТА
-# ==========================================
 def calculate_sport_score(sport: dict, p: PhysicalSkills, payload: AthletePayload, predicted_height: float) -> Optional[dict]:
     name = sport["name"]
     name_low = name.lower()
@@ -230,7 +227,6 @@ def calculate_sport_score(sport: dict, p: PhysicalSkills, payload: AthletePayloa
     if payload.sex == "male" and any(fem in name_low for fem in FEMALE_ONLY_SPORTS):
         return None
 
-    # Оценка реакции (4.0 - 10.0)
     if payload.reaction_ms <= 220:
         react_score = 10.0
     elif payload.reaction_ms <= 280:
@@ -240,11 +236,9 @@ def calculate_sport_score(sport: dict, p: PhysicalSkills, payload: AthletePayloa
     else:
         react_score = 4.0
 
-    # 1. Вычисление уникального спортивного хэша (дает индивидуальный сдвиг весов для любого вида)
     name_hash = int(hashlib.md5(name_low.encode('utf-8')).hexdigest(), 16)
-    unique_offset = ((name_hash % 11) - 5) * 0.015  # Диапазон от -7.5% до +7.5%
+    unique_offset = ((name_hash % 11) - 5) * 0.015
 
-    # 2. Базовый профиль навыков
     if any(w in name_low for w in ["акробат", "батут", "гимнаст", "рок-н-ролл", "брейкинг", "аэробик", "танцевальный", "фигурное", "скалолазание"]):
         raw_skill = p.coordination * 0.38 + p.flexibility * 0.32 + p.speed * 0.15 + p.speed_strength * 0.15
         age_weight = 1.25 if payload.age <= 8 else (1.00 if payload.age <= 11 else 0.80)
@@ -261,7 +255,6 @@ def calculate_sport_score(sport: dict, p: PhysicalSkills, payload: AthletePayloa
         nerve_weight = 1.30 if "слабая" in payload.nerve_type.lower() or "стабильная" in payload.nerve_type.lower() else 0.75
 
     elif any(w in name_low for w in ["тяжёлая атлетика", "пауэрлифт", "гирев", "силовой", "бодибилдинг", "армрестлинг"]):
-        # Узкая индивидуализация внутри силовых
         if "армрестлинг" in name_low:
             raw_skill = p.strength * 0.50 + react_score * 0.30 + p.coordination * 0.20
         elif "бодибилдинг" in name_low:
@@ -292,7 +285,6 @@ def calculate_sport_score(sport: dict, p: PhysicalSkills, payload: AthletePayloa
         age_weight = 1.00
         nerve_weight = 1.00
 
-    # 3. Применение индивидуального профильного коэффициента
     model_score = (raw_skill * 8.2) * age_weight * nerve_weight * (1.0 + unique_offset)
     final_score = min(98, max(55, int(model_score)))
 

@@ -9,21 +9,20 @@
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
     <script>
         (function() {
-            // Корректная подписка и инициализация для VK Mini Apps
             if (window.vkBridge) {
+                // Подписка на шину событий VK
                 window.vkBridge.subscribe((e) => {
                     if (e.detail && e.detail.type === 'VKWebAppInitResult') {
-                        console.log("[VK Bridge] Подтверждение инициализации получено");
+                        console.log("[VK Bridge] Initialized successfully");
                     }
                 });
-                window.vkBridge.send("VKWebAppInit")
-                    .then(() => console.log("[VK Bridge] VKWebAppInit отправлен"))
-                    .catch(err => console.warn("[VK Bridge Init Error]", err));
+                // Отправка сигнала готовности фрейма
+                window.vkBridge.send("VKWebAppInit").catch(() => {});
             }
         })();
     </script>
 
-    <link rel="stylesheet" href="style.css?v=16.0">
+    <link rel="stylesheet" href="style.css?v=17.0">
 </head>
 <body>
     <div class="app-container">
@@ -158,6 +157,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=16.0"></script>
+    <script src="app.js?v=17.0"></script>
 </body>
 </html>
