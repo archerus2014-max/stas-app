@@ -5,26 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- 1. Официальный SDK VK Bridge -->
+    <!-- Подключение SDK VK Bridge -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
 
-    <!-- 2. Мгновенный откликер для гарантированного снятия синей заставки VK -->
     <script>
         (function() {
-            function initVk() {
-                if (window.vkBridge) {
-                    window.vkBridge.send('VKWebAppInit')
-                        .then(function() { console.log('[VK Bridge] OK'); })
-                        .catch(function(e) { console.log('[VK Bridge] Error', e); });
-                }
+            // Мгновенная инициализация VK Bridge
+            if (window.vkBridge) {
+                window.vkBridge.send('VKWebAppInit')
+                    .then(function() { console.log('[VK Bridge] OK'); })
+                    .catch(function(e) { console.log('[VK Bridge] Init error', e); });
             }
-            initVk();
-            document.addEventListener('DOMContentLoaded', initVk);
-            window.addEventListener('load', initVk);
         })();
     </script>
 
-    <link rel="stylesheet" href="style.css?v=21.0">
+    <link rel="stylesheet" href="style.css?v=22.0">
 </head>
 <body>
     <div class="app-container">
@@ -140,13 +135,11 @@
                     </div>
                 </div>
 
-                <!-- БЛОК 1: СЕКЦИИ ЛАНГЕПАСА -->
                 <div class="dashboard-recommendations-section">
                     <h2 class="section-title">📐 Математический расчёт совместимости с секциями Лангепаса</h2>
                     <div id="recommendedGrid" class="cards-grid"></div>
                 </div>
 
-                <!-- БЛОК 2: ПРОЧИЕ ВИДЫ СПОРТА ИЗ РЕЕСТРА -->
                 <div class="dashboard-recommendations-section" style="margin-top: 25px;">
                     <h2 class="section-title" style="color: #7c3aed;">🌐 Другие перспективные виды спорта (Реестр РФ)</h2>
                     <div id="otherRecommendedGrid" class="cards-grid"></div>
@@ -159,6 +152,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=21.0"></script>
+    <script src="app.js?v=22.0"></script>
 </body>
 </html>
