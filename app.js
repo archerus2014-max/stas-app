@@ -1,11 +1,4 @@
-// ==========================================
-// 1. КОНФИГУРАЦИЯ И СОСТОЯНИЕ
-// ==========================================
-
-// Автоматическое определение URL бэкенда (локально или на Render)
-const API_URL = (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost")
-    ? "http://127.0.0.1:8000"
-    : "https://stas-api.onrender.com";
+const API_URL = "https://stas-api.onrender.com";
 
 let currentQuizStep = 0;
 let reactionStartTime = 0;
@@ -72,28 +65,13 @@ const temperamentRu = {
     melancholic: "Меланхолик"
 };
 
-// ==========================================
-// 2. ИНИЦИАЛИЗАЦИЯ VK BRIDGE ПРИ ЗАГРУЗКЕ
-// ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    initVkBridgeData();
+    fetchUserData();
     checkApiConnection();
 });
 
-function initVkBridgeData() {
+function fetchUserData() {
     if (window.vkBridge) {
-        // Подписка на события контейнера VK
-        window.vkBridge.subscribe((e) => {
-            if (e.detail && e.detail.type === 'VKWebAppInitResult') {
-                console.log("[VK Bridge] Подтверждение инициализации получено");
-            }
-        });
-
-        window.vkBridge.send("VKWebAppInit")
-            .then(() => console.log("[VK Bridge] Initialized in app.js"))
-            .catch((err) => console.warn("[VK Bridge Init Error]", err));
-
-        // Получение имени пользователя из VK
         window.vkBridge.send('VKWebAppGetUserInfo')
             .then((user) => {
                 if (user && user.first_name) {
@@ -132,9 +110,6 @@ function showScreen(screenId) {
     window.scrollTo(0, 0);
 }
 
-// ==========================================
-// 3. УПРАВЛЕНИЕ КВИЗОМ
-// ==========================================
 function startQuiz() {
     currentQuizStep = 0;
     showScreen("quizScreen");
@@ -244,9 +219,6 @@ function prevStep() {
     }
 }
 
-// ==========================================
-// 4. ТЕСТ НА СЕНСОМОТОРНУЮ РЕАКЦИЮ
-// ==========================================
 function resetReactionTestUI() {
     if (reactionTimer) clearTimeout(reactionTimer);
     reactionStartTime = 0;
@@ -311,9 +283,6 @@ function handleReactionClick() {
     }, 1200);
 }
 
-// ==========================================
-// 5. ТЕППИНГ-ТЕСТ ИЛЬИНА
-// ==========================================
 function resetTappingTestUI() {
     if (tappingTimer) clearInterval(tappingTimer);
     tapCount = 0;
@@ -385,9 +354,6 @@ async function finishTappingTest() {
     await fetchServerGigaChatAI();
 }
 
-// ==========================================
-// 6. ОТПРАВКА В БЭКЕНД И ОТРИСОВКА ДАШБОРДА
-// ==========================================
 function calculateAge(birthDateString) {
     if (!birthDateString) return 8;
 
