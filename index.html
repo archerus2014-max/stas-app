@@ -10,16 +10,20 @@
 
     <script>
         (function() {
-            // Мгновенная инициализация VK Bridge
-            if (window.vkBridge) {
-                window.vkBridge.send('VKWebAppInit')
-                    .then(function() { console.log('[VK Bridge] OK'); })
-                    .catch(function(e) { console.log('[VK Bridge] Init error', e); });
+            // Мгновенная инициализация VK Bridge для гарантии скрытия синей заставки
+            function initVkBridge() {
+                if (window.vkBridge) {
+                    window.vkBridge.send('VKWebAppInit')
+                        .then(function() { console.log('[VK Bridge] Initialized'); })
+                        .catch(function(e) { console.log('[VK Bridge] Init error', e); });
+                }
             }
+            initVkBridge();
+            document.addEventListener("DOMContentLoaded", initVkBridge);
         })();
     </script>
 
-    <link rel="stylesheet" href="style.css?v=22.0">
+    <link rel="stylesheet" href="style.css?v=25.0">
 </head>
 <body>
     <div class="app-container">
@@ -135,11 +139,13 @@
                     </div>
                 </div>
 
+                <!-- БЛОК 1: СЕКЦИИ ЛАНГЕПАСА -->
                 <div class="dashboard-recommendations-section">
                     <h2 class="section-title">📐 Математический расчёт совместимости с секциями Лангепаса</h2>
                     <div id="recommendedGrid" class="cards-grid"></div>
                 </div>
 
+                <!-- БЛОК 2: ПРОЧИЕ ВИДЫ СПОРТА ИЗ РЕЕСТРА -->
                 <div class="dashboard-recommendations-section" style="margin-top: 25px;">
                     <h2 class="section-title" style="color: #7c3aed;">🌐 Другие перспективные виды спорта (Реестр РФ)</h2>
                     <div id="otherRecommendedGrid" class="cards-grid"></div>
@@ -152,6 +158,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=22.0"></script>
+    <script src="app.js?v=25.0"></script>
 </body>
 </html>

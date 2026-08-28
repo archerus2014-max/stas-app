@@ -92,7 +92,7 @@ function fetchUserData() {
                     userAnswers.full_name = `${user.first_name} ${user.last_name}`;
                 }
             })
-            .catch(() => {});
+            .catch((e) => console.log("User info fetch mode:", e));
     }
 }
 
