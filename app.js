@@ -1,4 +1,15 @@
+// ==========================================
+// 1. КОНФИГУРАЦИЯ И ИНИЦИАЛИЗАЦИЯ VK BRIDGE
+// ==========================================
+
 const API_URL = "https://stas-api.onrender.com";
+
+// Мгновенный отклик для скрытия синей заставки ВКонтакте
+if (window.vkBridge) {
+    window.vkBridge.send("VKWebAppInit")
+        .then(() => console.log("[STAS] VK Bridge Init SUCCESS"))
+        .catch((err) => console.error("[STAS] VK Bridge Init ERR", err));
+}
 
 let currentQuizStep = 0;
 let reactionStartTime = 0;
@@ -65,6 +76,9 @@ const temperamentRu = {
     melancholic: "Меланхолик"
 };
 
+// ==========================================
+// 2. ЗАГРУЗКА ДАННЫХ И ПРОВЕРКА СВЯЗИ
+// ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     fetchUserData();
     checkApiConnection();
@@ -91,7 +105,7 @@ async function checkApiConnection() {
             statusEl.classList.add("connected");
         }
     } catch (e) {
-        console.log("Health check error:", e);
+        console.log("Health check silent mode:", e);
     }
 }
 
@@ -110,6 +124,9 @@ function showScreen(screenId) {
     window.scrollTo(0, 0);
 }
 
+// ==========================================
+// 3. ЛОГИКА КВИЗА
+// ==========================================
 function startQuiz() {
     currentQuizStep = 0;
     showScreen("quizScreen");
@@ -219,6 +236,9 @@ function prevStep() {
     }
 }
 
+// ==========================================
+// 4. ТЕСТ РЕАКЦИИ
+// ==========================================
 function resetReactionTestUI() {
     if (reactionTimer) clearTimeout(reactionTimer);
     reactionStartTime = 0;
@@ -283,6 +303,9 @@ function handleReactionClick() {
     }, 1200);
 }
 
+// ==========================================
+// 5. ТЕППИНГ-ТЕСТ
+// ==========================================
 function resetTappingTestUI() {
     if (tappingTimer) clearInterval(tappingTimer);
     tapCount = 0;
@@ -354,6 +377,9 @@ async function finishTappingTest() {
     await fetchServerGigaChatAI();
 }
 
+// ==========================================
+// 6. РАСЧЕТ И ОТРИСОВКА РЕЗУЛЬТАТОВ
+// ==========================================
 function calculateAge(birthDateString) {
     if (!birthDateString) return 8;
 
