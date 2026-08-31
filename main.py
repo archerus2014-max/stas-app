@@ -17,7 +17,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = FastAPI(title="STAS Sports Agent Engine")
 
-# Полная CORS-политика для запросов из контейнера VK
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,7 +28,6 @@ app.add_middleware(
 @app.middleware("http")
 async def add_vk_iframe_headers(request: Request, call_next):
     response = await call_next(request)
-    # Явное разрешение встраивания iframe для всех поддоменов VK и VK Mini Apps
     response.headers["Content-Security-Policy"] = (
         "frame-ancestors 'self' https://*.vk.com https://*.vk.ru https://vk.com https://vk.ru https://*.vk-apps.com https://*.vk.me;"
     )
@@ -476,7 +474,6 @@ async def analyze_athlete(payload: AthletePayload):
     })
 
 
-# Прямая выдача главной страницы по всем возможным корневым запросам
 @app.get("/")
 async def serve_root():
     return FileResponse("index.html")
