@@ -5,25 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- Подключение VK Bridge c авто-обработкой ошибок -->
-    <script src="vk-bridge.js" onerror="console.warn('[STAS] vk-bridge.js load failed, falling back')"></script>
+    <script src="vk-bridge.js"></script>
     <script>
         (function() {
-            function initBridge() {
+            function initVk() {
                 if (window.vkBridge && typeof window.vkBridge.send === 'function') {
                     window.vkBridge.send("VKWebAppInit")
-                        .then(function() { console.log("[STAS] VK Bridge Initialized"); })
-                        .catch(function(e) { console.log("[STAS] VK Bridge Init error", e); });
-                } else {
-                    console.log("[STAS] Running without VK Bridge");
+                        .then(function() {
+                            return window.vkBridge.send("VKWebAppHideLoadingScreen");
+                        })
+                        .catch(function(e) { console.log("[STAS] Bridge Init Note:", e); });
                 }
             }
-            initBridge();
-            window.addEventListener("DOMContentLoaded", initBridge);
+
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", initVk);
+            } else {
+                initVk();
+            }
         })();
     </script>
 
-    <link rel="stylesheet" href="style.css?v=70.0">
+    <link rel="stylesheet" href="style.css?v=300.0">
 </head>
 <body>
     <div class="app-container">
@@ -156,6 +159,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=70.0"></script>
+    <script src="app.js?v=300.0"></script>
 </body>
 </html>

@@ -36,6 +36,14 @@ body {
     display: block !important;
 }
 
+/* Гарантированный показ интерфейса внутри iframe VK */
+html, body {
+    position: relative !important;
+    z-index: 1 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
 /* Шапка */
 .main-header {
     display: flex;

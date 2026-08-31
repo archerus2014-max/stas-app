@@ -79,21 +79,14 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function fetchUserData() {
-    if (window.vkBridge) {
-        const timeout = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("VK Bridge Timeout")), 1200)
-        );
-
-        Promise.race([
-            window.vkBridge.send('VKWebAppGetUserInfo'),
-            timeout
-        ])
-        .then((user) => {
-            if (user && user.first_name) {
-                userAnswers.full_name = `${user.first_name} ${user.last_name}`;
-            }
-        })
-        .catch((e) => console.log("[STAS] User info bypassed:", e.message));
+    if (window.vkBridge && typeof window.vkBridge.send === 'function') {
+        window.vkBridge.send('VKWebAppGetUserInfo')
+            .then((user) => {
+                if (user && user.first_name) {
+                    userAnswers.full_name = `${user.first_name} ${user.last_name}`;
+                }
+            })
+            .catch((e) => console.log("[STAS] User info mode:", e.message));
     }
 }
 
@@ -106,7 +99,7 @@ async function checkApiConnection() {
             statusEl.classList.add("connected");
         }
     } catch (e) {
-        console.log("[STAS] Health check silent mode:", e);
+        console.log("[STAS] Health check mode:", e);
     }
 }
 
