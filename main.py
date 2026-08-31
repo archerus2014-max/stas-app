@@ -17,7 +17,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = FastAPI(title="STAS Sports Agent Engine")
 
-# Добавлены все поддомены VK для защиты от ошибок CSP и CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
