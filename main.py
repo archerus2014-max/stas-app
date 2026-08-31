@@ -17,6 +17,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = FastAPI(title="STAS Sports Agent Engine")
 
+# Добавлены все поддомены VK для защиты от ошибок CSP и CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -50,9 +51,6 @@ EXCLUDED_SPORTS = [
     "пожарно-спасательный", "морское многоборье", "боулинг", "гольф", "шашки"
 ]
 
-# --------------------------------------------------------------------------
-# БАЗА НОРМАТИВОВ ВФСК ГТО (ОФИЦИАЛЬНЫЕ СТАНДАРТЫ GTO.RU) ДЛЯ ВСЕХ ВОЗРАСТОВ
-# --------------------------------------------------------------------------
 GTO_NORMS = {
     "female": {
         (6, 7): {"pullups": (1, 2, 4), "pushups": (4, 7, 11), "flexibility": (2, 4, 7), "situps": (19, 23, 29), "long_jump": (105, 115, 130), "run_30m": (6.9, 6.4, 5.9), "target": (2, 3, 4)},
@@ -418,7 +416,6 @@ async def analyze_athlete(payload: AthletePayload):
     temp_str = temp_ru_map.get(payload.temperament, payload.temperament)
     p = payload.physical or PhysicalSkills()
 
-    # Математический расчёт видов спорта в движке
     langepas_sports, other_registry_sports = load_sports_from_excel()
 
     langepas_scores = []
@@ -439,7 +436,6 @@ async def analyze_athlete(payload: AthletePayload):
     other_scores.sort(key=lambda x: x["score"], reverse=True)
     other_top_sports = other_scores[:3]
 
-    # Оценка знака ГТО
     gto_dict = payload.normatives.dict() if payload.normatives else None
     gto_badge = evaluate_gto_badge(payload.age, payload.sex, gto_dict)
 

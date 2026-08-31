@@ -98,7 +98,7 @@ const normativesQuestions = [
         title: "Челночный бег 3х10 (Скоростные и координационные)", 
         desc: "Старт у линии, бег 10 м с пересечением линии финиша, разворот и финиш. Точность до 0,01 с.",
         avg: "Усредненный показатель: 9,0 сек",
-        field: "shuttle_run_sec", subfield: "normatives", type: "number_norm", type: "number_norm", isFloat: true, unit: "сек", default: 9.0 
+        field: "shuttle_run_sec", subfield: "normatives", type: "number_norm", isFloat: true, unit: "сек", default: 9.0 
     },
     { 
         title: "Бег на 30 м (Скоростные способности)", 
@@ -142,7 +142,7 @@ const temperamentRu = {
 // 2. ЗАГРУЗКА ДАННЫХ И ПРОВЕРКА СВЯЗИ
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    // Принудительно разблокируем интерфейс для пользователя
+    // ГАРАНТИРОВАННО разблокируем интерфейс для пользователя
     showScreen("welcomeScreen");
     fetchUserData();
     checkApiConnection();
