@@ -50,6 +50,90 @@ EXCLUDED_SPORTS = [
     "пожарно-спасательный", "морское многоборье", "боулинг", "гольф", "шашки"
 ]
 
+# --------------------------------------------------------------------------
+# БАЗА НОРМАТИВОВ ВФСК ГТО (ОФИЦИАЛЬНЫЕ СТАНДАРТЫ GTO.RU) ДЛЯ ВСЕХ ВОЗРАСТОВ
+# --------------------------------------------------------------------------
+GTO_NORMS = {
+    "female": {
+        (6, 7): {"pullups": (1, 2, 4), "pushups": (4, 7, 11), "flexibility": (2, 4, 7), "situps": (19, 23, 29), "long_jump": (105, 115, 130), "run_30m": (6.9, 6.4, 5.9), "target": (2, 3, 4)},
+        (8, 9): {"pullups": (1, 3, 5), "pushups": (6, 9, 14), "flexibility": (3, 6, 9), "situps": (24, 28, 34), "long_jump": (115, 125, 145), "run_30m": (6.4, 5.9, 5.4), "target": (2, 3, 4)},
+        (10, 11): {"pullups": (2, 4, 6), "pushups": (8, 11, 16), "flexibility": (4, 7, 11), "situps": (27, 32, 38), "long_jump": (125, 140, 160), "run_30m": (6.0, 5.5, 5.0), "target": (3, 4, 5)},
+        (12, 13): {"pullups": (2, 4, 7), "pushups": (9, 13, 18), "flexibility": (5, 9, 13), "situps": (30, 36, 42), "long_jump": (135, 150, 170), "run_30m": (5.7, 5.2, 4.8), "target": (3, 4, 5)},
+        (14, 15): {"pullups": (3, 5, 8), "pushups": (10, 14, 20), "flexibility": (6, 10, 14), "situps": (32, 38, 45), "long_jump": (145, 160, 180), "run_30m": (5.5, 5.0, 4.6), "target": (3, 4, 5)},
+        (16, 17): {"pullups": (3, 6, 9), "pushups": (11, 15, 21), "flexibility": (7, 11, 15), "situps": (34, 40, 47), "long_jump": (150, 165, 185), "run_30m": (5.3, 4.9, 4.5), "target": (3, 4, 5)}
+    },
+    "male": {
+        (6, 7): {"pullups": (2, 3, 5), "pushups": (7, 10, 15), "flexibility": (1, 3, 6), "situps": (21, 26, 32), "long_jump": (115, 125, 140), "run_30m": (6.6, 6.1, 5.6), "target": (2, 3, 4)},
+        (8, 9): {"pullups": (2, 4, 6), "pushups": (9, 13, 18), "flexibility": (2, 4, 8), "situps": (26, 31, 37), "long_jump": (125, 138, 155), "run_30m": (6.0, 5.5, 5.1), "target": (2, 3, 4)},
+        (10, 11): {"pullups": (3, 5, 8), "pushups": (11, 15, 22), "flexibility": (3, 5, 9), "situps": (29, 35, 42), "long_jump": (138, 152, 175), "run_30m": (5.6, 5.1, 4.7), "target": (3, 4, 5)},
+        (12, 13): {"pullups": (4, 7, 10), "pushups": (14, 19, 27), "flexibility": (4, 7, 11), "situps": (33, 40, 47), "long_jump": (155, 170, 195), "run_30m": (5.2, 4.7, 4.3), "target": (3, 4, 5)},
+        (14, 15): {"pullups": (5, 8, 12), "pushups": (17, 23, 32), "flexibility": (5, 8, 13), "situps": (36, 43, 51), "long_jump": (175, 195, 220), "run_30m": (4.8, 4.4, 4.0), "target": (3, 4, 5)},
+        (16, 17): {"pullups": (7, 10, 14), "pushups": (20, 27, 38), "flexibility": (6, 9, 14), "situps": (38, 46, 54), "long_jump": (190, 210, 235), "run_30m": (4.6, 4.2, 3.9), "target": (3, 4, 5)}
+    }
+}
+
+def evaluate_gto_badge(age: int, sex: str, norm: Optional[dict]) -> Optional[str]:
+    if not norm:
+        return None
+
+    gender_norms = GTO_NORMS.get(sex, GTO_NORMS["male"])
+    age_key = None
+    for r in gender_norms.keys():
+        if r[0] <= age <= r[1]:
+            age_key = r
+            break
+    if not age_key:
+        age_key = (10, 11)
+
+    norms = gender_norms[age_key]
+    scores = []
+
+    def calc_test_badge(val, bronze, silver, gold, lower_is_better=False):
+        if val is None or val == 0:
+            return 0
+        if lower_is_better:
+            if val <= gold: return 3
+            if val <= silver: return 2
+            if val <= bronze: return 1
+            return 0
+        else:
+            if val >= gold: return 3
+            if val >= silver: return 2
+            if val >= bronze: return 1
+            return 0
+
+    scores.append(calc_test_badge(norm.get("pullups"), *norms["pullups"]))
+    scores.append(calc_test_badge(norm.get("pushups"), *norms["pushups"]))
+    scores.append(calc_test_badge(norm.get("flexibility_cm"), *norms["flexibility"]))
+    scores.append(calc_test_badge(norm.get("situps"), *norms["situps"]))
+    scores.append(calc_test_badge(norm.get("long_jump_cm"), *norms["long_jump"]))
+    scores.append(calc_test_badge(norm.get("run_30m_sec"), *norms["run_30m"], lower_is_better=True))
+    scores.append(calc_test_badge(norm.get("target_throw"), *norms["target"]))
+
+    valid_scores = [s for s in scores if s > 0]
+    if not valid_scores:
+        return None
+
+    avg_score = sum(valid_scores) / len(valid_scores)
+    min_score = min(valid_scores)
+
+    if avg_score >= 2.6 and min_score >= 2:
+        return "🥇 Золотой знак ГТО"
+    elif avg_score >= 1.8 and min_score >= 1:
+        return "🥈 Серебряный знак ГТО"
+    elif avg_score >= 1.0:
+        return "🥉 Бронзовый знак ГТО"
+    else:
+        return "🎗️ Хороший уровень подготовки для сдачи ГТО"
+
+
+def extract_short_name(full_name: str) -> str:
+    parts = full_name.strip().split()
+    if len(parts) >= 2:
+        return parts[1]
+    return parts[0] if parts else "Чемпион"
+
+
 def clean_sport_name(name: str) -> str:
     name = name.strip()
     if name.endswith("(") or "мма" in name.lower():
@@ -60,6 +144,7 @@ def clean_sport_name(name: str) -> str:
     if len(name) > 1:
         name = name[0].upper() + name[1:]
     return name
+
 
 def load_sports_from_excel() -> Tuple[List[Dict], List[Dict]]:
     excel_files = ["Langsport_НП1_возраст.xls", "Langsport_НП1_возраст_2.xls", "C:\\STAS\\Langsport_НП1_возраст.xls"]
@@ -206,22 +291,23 @@ def ask_gigachat(prompt_text: str, credentials: str) -> Optional[str]:
                 "role": "system",
                 "content": (
                     "Ты — Бельчонок СТАС, дружелюбный спортивный агент СШОР «Академия спорта» г. Лангепас. "
-                    "Обращайся strictly НАПРЯМУЮ К ТЕСТИРУЕМОМУ по имени: '[Имя], ты большой(ая) молодец! ...' "
-                    "Объясняй спортивные успехи научно (сенситивные периоды развития В.П. Филина и В.К. Бальсевича). "
-                    "Упоминай ТОЛЬКО ТЕ ВИДЫ СПОРТА, которые прямо рекомендуются в дашборде!"
+                    "Начинай текст СТРОГО с обращения по ИМЕНИ (например: 'Таисия, ты большая молодец!'). "
+                    "НЕ ИСПОЛЬЗУЙ фразу 'Строго НАПРЯМУЮ'. Пиши динамично, полностью завершай свои мысли "
+                    "без обрыва предложений на полуслове! "
+                    "Упоминай ТОЛЬКО ТЕ ВИДЫ СПОРТА, которые прямо переданы тебе в списке рекомендованных секций!"
                 )
             },
             {"role": "user", "content": prompt_text}
         ],
         "temperature": 0.6,
-        "max_tokens": 650
+        "max_tokens": 800
     }
     try:
-        response = requests.post(url, headers=headers, json=payload, verify=False, timeout=12)
+        response = requests.post(url, headers=headers, json=payload, verify=False, timeout=15)
         if response.status_code == 200:
             content = response.json()['choices'][0]['message']['content']
-            if len(content) > 1500:
-                content = content[:1490] + "..."
+            if len(content) > 2000:
+                content = content[:1990] + "..."
             return content
     except Exception as e:
         print(f"[GigaChat Query Error]: {e}")
@@ -332,6 +418,7 @@ async def analyze_athlete(payload: AthletePayload):
     temp_str = temp_ru_map.get(payload.temperament, payload.temperament)
     p = payload.physical or PhysicalSkills()
 
+    # Математический расчёт видов спорта в движке
     langepas_sports, other_registry_sports = load_sports_from_excel()
 
     langepas_scores = []
@@ -352,32 +439,40 @@ async def analyze_athlete(payload: AthletePayload):
     other_scores.sort(key=lambda x: x["score"], reverse=True)
     other_top_sports = other_scores[:3]
 
+    # Оценка знака ГТО
+    gto_dict = payload.normatives.dict() if payload.normatives else None
+    gto_badge = evaluate_gto_badge(payload.age, payload.sex, gto_dict)
+
+    short_name = extract_short_name(payload.full_name)
     top_names_str = ", ".join([f"«{item['sport_name']}»" for item in top_sports])
 
+    gto_prompt_note = f"\n- Комплекс ГТО: По результатам ОФП претендует на: {gto_badge}." if gto_badge else ""
+
     user_prompt = (
-        f"Напиши личное обращение к тестируемому по имени {payload.full_name}.\n"
-        f"Пол: {'Девочка' if payload.sex == 'female' else 'Мальчик'}, Возраст: {payload.age} лет.\n"
-        f"Антропометрия: Рост {payload.height_cm} см, Вес {payload.weight_kg} кг, ИМТ {bmi}, Прогноз роста {predicted_height} см.\n"
-        f"Сенсомоторная реакция: {payload.reaction_ms} мс. Нервная система: {payload.nerve_type}. Темперамент: {temp_str}.\n"
-        f"Рекомендованные секции из дашборда: {top_names_str}.\n\n"
-        f"Требование к тексту: Похвали ребенка по имени ({payload.full_name}), объясни его научно-спортивный потенциал "
-        f"и обоснуй, почему ему подходят ИМЕННО ЭТИ секции: {top_names_str}."
+        f"Напиши личное обращение к {short_name}.\n"
+        f"Данные: Возраст {payload.age} лет, Рост {payload.height_cm} см, Вес {payload.weight_kg} кг, ИМТ {bmi}.\n"
+        f"Сенсомоторная реакция: {payload.reaction_ms} мс, Нервная система: {payload.nerve_type}, Темперамент: {temp_str}.{gto_prompt_note}\n\n"
+        f"ВАЖНО: Начни ответ прямо с обращения по имени: '{short_name}, ты большая молодец! ...' (или 'большой молодец').\n"
+        f"Опиши научно-спортивный потенциал емко и сбалансированно. Обоснуй выбор ТОЛЬКО СЛЕДУЮЩИХ секций: {top_names_str}.\n"
+        f"Если есть оценка ГТО ({gto_badge}), обязательно отметь эту победу в рекомендациях!"
     )
 
     ai_summary = ask_gigachat(user_prompt, GIGACHAT_CREDENTIALS)
 
     if not ai_summary:
+        gto_msg = f" Твои нормативы ОФП позволяют претендовать на {gto_badge}!" if gto_badge else ""
         ai_summary = (
-            f"{payload.full_name}, ты большой молодец! "
+            f"{short_name}, ты большой молодец! "
             f"Твои физические показатели (рост {payload.height_cm} см, ИМТ {bmi}) и тип нервной системы ({payload.nerve_type}) "
-            f"показывают замечательную предрасположенность к занятиям спортом. "
-            f"На основе твоих результатов наиболее подходящими секциями являются: {top_names_str}!"
+            f"показывают замечательную предрасположенность к физическим нагрузкам.{gto_msg} "
+            f"На основе математического расчёта тебе идеально подходят секции: {top_names_str}!"
         )
 
     return JSONResponse(content={
         "status": "success",
         "predicted_adult_height": predicted_height,
         "bmi": bmi,
+        "gto_badge": gto_badge,
         "ai_text": ai_summary,
         "top_sports": top_sports,
         "other_top_sports": other_top_sports
