@@ -5,32 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- Синхронный вызов VK Bridge до загрузки остальных ресурсов -->
+    <!-- Подключение VK Bridge CDN -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
     <script>
         (function() {
             function initVK() {
                 if (window.vkBridge && typeof window.vkBridge.send === 'function') {
                     window.vkBridge.send("VKWebAppInit")
-                        .then(function() {
+                        .then(function(data) {
+                            console.log("[STAS] VK Bridge Init Success:", data);
                             return window.vkBridge.send("VKWebAppHideLoadingScreen");
                         })
                         .catch(function(err) {
-                            console.log("[STAS] VK Bridge Init:", err);
+                            console.warn("[STAS] VK Bridge Init Error:", err);
                         });
                 }
             }
+
+            // Запускаем инициализацию сразу
+            initVK();
+
             if (document.readyState === "loading") {
                 document.addEventListener("DOMContentLoaded", initVK);
-            } else {
-                initVK();
             }
-            // Страховочный таймер для гарантированного снятия экрана загрузки VK
+
+            // Страховочный вызов для гарантированного снятия заставки VK
+            window.addEventListener("load", initVK);
             setTimeout(initVK, 800);
         })();
     </script>
 
-    <link rel="stylesheet" href="style.css?v=390.0">
+    <link rel="stylesheet" href="style.css?v=420.0">
 </head>
 <body>
     <div class="app-container">
@@ -171,6 +176,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=390.0"></script>
+    <script src="app.js?v=420.0"></script>
 </body>
 </html>
