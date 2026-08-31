@@ -142,7 +142,7 @@ const temperamentRu = {
 // 2. ЗАГРУЗКА ДАННЫХ И ПРОВЕРКА СВЯЗИ
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    // ГАРАНТИРОВАННО разблокируем интерфейс для пользователя
+    // Гарантированно открываем экран приложения
     showScreen("welcomeScreen");
     fetchUserData();
     checkApiConnection();

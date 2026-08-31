@@ -5,33 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- VK Bridge CDN -->
+    <!-- Прямое синхронное подключение VK Bridge -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
     <script>
-        function safeInitVkBridge() {
-            if (window.vkBridge && typeof window.vkBridge.send === 'function') {
-                window.vkBridge.send("VKWebAppInit")
-                    .then(function() {
-                        return window.vkBridge.send("VKWebAppHideLoadingScreen");
-                    })
-                    .catch(function(e) {
-                        console.log("[STAS] VK Bridge Init Note:", e);
-                    });
-
-                // Страховочный тайм-аут: скрываем экран загрузки VK через 1.2 сек в любом случае
-                setTimeout(function() {
-                    try {
-                        window.vkBridge.send("VKWebAppHideLoadingScreen");
-                    } catch(err) {}
-                }, 1200);
+        (function initVK() {
+            function sendInit() {
+                if (window.vkBridge && typeof window.vkBridge.send === 'function') {
+                    window.vkBridge.send("VKWebAppInit")
+                        .then(function() {
+                            return window.vkBridge.send("VKWebAppHideLoadingScreen");
+                        })
+                        .catch(function(e) {
+                            console.log("[STAS] VK Init Note:", e);
+                        });
+                }
             }
-        }
 
-        document.addEventListener("DOMContentLoaded", safeInitVkBridge);
-        window.addEventListener("load", safeInitVkBridge);
+            // Мгновенный запуск без ожидания тяжелых ресурсов
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", sendInit);
+            } else {
+                sendInit();
+            }
+
+            // Резервное скрытие заставки VK через 1 секунду
+            setTimeout(sendInit, 1000);
+        })();
     </script>
 
-    <link rel="stylesheet" href="style.css?v=370.0">
+    <link rel="stylesheet" href="style.css?v=380.0">
 </head>
 <body>
     <div class="app-container">
@@ -172,6 +174,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=370.0"></script>
+    <script src="app.js?v=380.0"></script>
 </body>
 </html>
