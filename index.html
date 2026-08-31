@@ -5,23 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- Подключаем VK Bridge строго через внешний CDN UNPKG с обработчиком onload -->
-    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js" onload="initVkBridge()"></script>
+    <!-- VK Bridge CDN -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
     <script>
-        function initVkBridge() {
-            if (window.vkBridge && typeof window.vkBridge.send === 'function') {
-                window.vkBridge.send("VKWebAppInit")
-                    .then(function() {
-                        return window.vkBridge.send("VKWebAppHideLoadingScreen");
+        document.addEventListener("DOMContentLoaded", function() {
+            if (window.vkBridge) {
+                vkBridge.send("VKWebAppInit")
+                    .then(function(data) {
+                        console.log("[STAS] VK Bridge Init Success:", data);
+                        return vkBridge.send("VKWebAppHideLoadingScreen");
                     })
-                    .catch(function(e) {
-                        console.log("[STAS] Bridge Init Note:", e);
+                    .catch(function(error) {
+                        console.log("[STAS] VK Bridge Init Error:", error);
                     });
             }
-        }
+        });
     </script>
 
-    <link rel="stylesheet" href="style.css?v=340.0">
+    <link rel="stylesheet" href="style.css?v=350.0">
 </head>
 <body>
     <div class="app-container">
@@ -162,6 +163,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=340.0"></script>
+    <script src="app.js?v=350.0"></script>
 </body>
 </html>

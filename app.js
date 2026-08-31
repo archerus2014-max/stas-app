@@ -54,10 +54,10 @@ const baseQuestions = [
     { title: "ФИО Ребенка", field: "full_name", type: "text", placeholder: "Введите ФИО ребенка" },
     { title: "Дата рождения (ДД.ММ.ГГГГ)", field: "birth_date", type: "date_text", placeholder: "15.05.2016" },
     { title: "Пол ребенка", field: "sex", type: "gender_cards" },
-    { title: "Рост ребенка (см)", field: "height_cm", type: "number", default: 125 },
-    { title: "Вес ребенка (кг)", field: "weight_kg", type: "number", default: 25 },
-    { title: "Рост отца (см)", field: "father_height_cm", type: "number", default: 178 },
-    { title: "Рост матери (см)", field: "mother_height_cm", type: "number", default: 165 }
+    { title: "Рост ребенка (см)", field: "height_cm", type: "number", isFloat: false, default: 125 },
+    { title: "Вес ребенка (кг)", field: "weight_kg", type: "number", isFloat: false, default: 25 },
+    { title: "Рост отца (см)", field: "father_height_cm", type: "number", isFloat: false, default: 178 },
+    { title: "Рост матери (см)", field: "mother_height_cm", type: "number", isFloat: false, default: 165 }
 ];
 
 const physicalQuestions = [
@@ -74,49 +74,49 @@ const normativesQuestions = [
         title: "Подтягивание из виса на высокой перекладине (Силовые способности)", 
         desc: "Из положения вис хватом сверху, ноги не касаются пола. Подтянуться так, чтобы подбородок был выше перекладины, опуститься до полного выпрямления рук.",
         avg: "Усредненный показатель: 1 раз",
-        field: "pullups", subfield: "normatives", type: "number_norm", unit: "раз", default: 1 
+        field: "pullups", subfield: "normatives", type: "number_norm", isFloat: false, unit: "раз", default: 1 
     },
     { 
         title: "Наклон вперед из положения стоя на гимнастической скамье (Гибкость)", 
         desc: "Наклон вперед из положения стоя с прямыми ногами на гимнастической скамье. Выполняется с фиксацией 2 секунды.",
         avg: "Усредненный показатель: 8 см",
-        field: "flexibility_cm", subfield: "normatives", type: "number_norm", unit: "см", default: 8 
+        field: "flexibility_cm", subfield: "normatives", type: "number_norm", isFloat: false, unit: "см", default: 8 
     },
     { 
         title: "Поднимания туловища из положения лежа на спине (Силовые и выносливость)", 
         desc: "Руки за головой в замок, ноги согнуты под 90°. Максимальное количество касаний локтями бедер за 1 минуту.",
         avg: "Усредненный показатель: 29 раз/мин",
-        field: "situps", subfield: "normatives", type: "number_norm", unit: "раз/мин", default: 29 
+        field: "situps", subfield: "normatives", type: "number_norm", isFloat: false, unit: "раз/мин", default: 29 
     },
     { 
         title: "Прыжок в длину с места толчком двумя ногами (Скоростно-силовые)", 
         desc: "Отталкивание двумя ногами от линии. Измерение по перпендикуляру до ближайшего следа касания любой частью тела.",
         avg: "Усредненный показатель: 134 см",
-        field: "long_jump_cm", subfield: "normatives", type: "number_norm", unit: "см", default: 134 
+        field: "long_jump_cm", subfield: "normatives", type: "number_norm", isFloat: false, unit: "см", default: 134 
     },
     { 
         title: "Челночный бег 3х10 (Скоростные и координационные)", 
-        desc: "Старт у линии, бег 10 м с пересечением линии финиша, разворот и финиш. Точность до 0,1 с.",
-        avg: "Усредненный показатель: 9 сек",
-        field: "shuttle_run_sec", subfield: "normatives", type: "number_norm", unit: "сек", default: 9 
+        desc: "Старт у линии, бег 10 м с пересечением линии финиша, разворот и финиш. Точность до 0,01 с.",
+        avg: "Усредненный показатель: 9,0 сек",
+        field: "shuttle_run_sec", subfield: "normatives", type: "number_norm", isFloat: true, unit: "сек", default: 9.0 
     },
     { 
         title: "Бег на 30 м (Скоростные способности)", 
-        desc: "Выполняется с высокого старта по прямой беговой дорожке с твердым покрытием. Результат фиксируется до 0,1 с.",
-        avg: "Усредненный показатель: 6 сек",
-        field: "run_30m_sec", subfield: "normatives", type: "number_norm", unit: "сек", default: 6 
+        desc: "Выполняется с высокого старта по прямой беговой дорожке с твердым покрытием. Результат фиксируется до 0,01 с.",
+        avg: "Усредненный показатель: 6,0 сек",
+        field: "run_30m_sec", subfield: "normatives", type: "number_norm", isFloat: true, unit: "сек", default: 6.0 
     },
     { 
         title: "Сгибание и разгибание рук в упоре лежа на полу (Силовые способности)", 
         desc: "Упор лежа, руки на ширине плеч, локти не более 45°. Касание грудью пола/платформы 5 см, фиксация 1 секунда.",
         avg: "Усредненный показатель: 10 раз",
-        field: "pushups", subfield: "normatives", type: "number_norm", unit: "раз", default: 10 
+        field: "pushups", subfield: "normatives", type: "number_norm", isFloat: false, unit: "раз", default: 10 
     },
     { 
         title: "Метание теннисного мяча в цель с 6 метров (Координационные способности)", 
         desc: "Метание мяча 57 г в обруч 90 см на высоте 2 м. Предоставляется 5 попыток, зачитывается число попаданий.",
         avg: "Усредненный показатель: 3 попаданий",
-        field: "target_throw", subfield: "normatives", type: "number_norm", unit: "попаданий", default: 3 
+        field: "target_throw", subfield: "normatives", type: "number_norm", isFloat: false, unit: "попаданий", default: 3 
     }
 ];
 
@@ -233,15 +233,18 @@ function renderQuestion() {
     let inputHtml = "";
     if (q.type === "date_text") {
         inputHtml = `<input type="text" id="quizInput" class="quiz-input" inputmode="numeric" placeholder="${q.placeholder || 'ДД.ММ.ГГГГ'}" maxlength="10" value="${currentValue || ''}" oninput="formatDateInput(this)">`;
-    } else if (q.type === "text" || q.type === "number") {
-        inputHtml = `<input type="${q.type}" id="quizInput" class="quiz-input" placeholder="${q.placeholder || ''}" value="${currentValue || ''}">`;
+    } else if (q.type === "text") {
+        inputHtml = `<input type="text" id="quizInput" class="quiz-input" placeholder="${q.placeholder || ''}" value="${currentValue || ''}">`;
+    } else if (q.type === "number") {
+        inputHtml = `<input type="number" id="quizInput" class="quiz-input" step="1" inputmode="numeric" pattern="[0-9]*" placeholder="${q.placeholder || ''}" value="${currentValue || ''}">`;
     } else if (q.type === "number_norm") {
+        const stepAttr = q.isFloat ? 'step="0.01"' : 'step="1" inputmode="numeric" pattern="[0-9]*"';
         inputHtml = `
             <div class="normative-card">
                 ${q.desc ? `<p class="normative-desc">${q.desc}</p>` : ''}
                 ${q.avg ? `<p class="normative-avg">${q.avg}</p>` : ''}
                 <div class="normative-input-box">
-                    <input type="number" id="quizInput" class="quiz-input" step="0.1" placeholder="Результат" value="${currentValue !== undefined ? currentValue : (q.default || '')}">
+                    <input type="number" id="quizInput" class="quiz-input" ${stepAttr} placeholder="Результат" value="${currentValue !== undefined ? currentValue : (q.default || '')}">
                     <span class="normative-unit">${q.unit}</span>
                 </div>
             </div>
@@ -278,6 +281,8 @@ function renderQuestion() {
         <div class="input-wrapper">${inputHtml}</div>
         <button type="button" class="btn-primary" style="margin-top:20px;" onclick="nextStep()">Далее ➔</button>
     `;
+    
+    window.scrollTo(0, 0);
 }
 
 function selectCardOption(field, value) {
@@ -307,7 +312,13 @@ function saveCurrentAnswer() {
     const input = document.getElementById("quizInput");
     if (input && q) {
         let val = input.value;
-        if (q.type === "number" || q.type === "number_norm") val = parseFloat(val) || 0;
+        if (q.type === "number" || q.type === "number_norm") {
+            let numVal = parseFloat(val) || 0;
+            if (!q.isFloat) {
+                numVal = Math.round(numVal);
+            }
+            val = numVal;
+        }
         
         if (q.subfield) {
             userAnswers[q.subfield][q.field] = val;
@@ -339,26 +350,20 @@ function prevStep() {
     }
 }
 
-// Пересчет нормативов ОФП в баллы профиля физических качеств
 function calculatePhysicalFromNorms() {
     const n = userAnswers.normatives;
 
-    // 1. Силовые способности
     let pullScore = (n.pullups / 3) * 4; 
     let pushScore = (n.pushups / 15) * 4;
     let situpsScore = (n.situps / 35) * 2;
     let strength = Math.min(10, Math.max(1, Math.round(pullScore + pushScore + situpsScore)));
 
-    // 2. Гибкость
     let flexibility = Math.min(10, Math.max(1, Math.round((n.flexibility_cm / 12) * 8 + 2)));
 
-    // 3. Выносливость
     let endurance = Math.min(10, Math.max(1, Math.round((n.situps / 35) * 7 + (n.pushups / 15) * 3)));
 
-    // 4. Скоростно-силовые способности
     let speed_strength = Math.min(10, Math.max(1, Math.round((n.long_jump_cm / 160) * 8 + 2)));
 
-    // 5. Скоростные способности
     let speedVal = 6;
     if (n.run_30m_sec > 0) {
         speedVal = Math.min(10, Math.max(1, Math.round((5.0 / n.run_30m_sec) * 8 + 2)));
@@ -366,7 +371,6 @@ function calculatePhysicalFromNorms() {
         speedVal = Math.min(10, Math.max(1, Math.round((8.0 / n.shuttle_run_sec) * 8 + 2)));
     }
 
-    // 6. Координационные способности
     let coordTarget = (n.target_throw / 5) * 6;
     let coordShuttle = (8.5 / n.shuttle_run_sec) * 4;
     let coordination = Math.min(10, Math.max(1, Math.round(coordTarget + coordShuttle)));
