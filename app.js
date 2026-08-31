@@ -9,10 +9,12 @@ let reactionStartTime = 0;
 let reactionTimer = null;
 let reactionActive = false;
 
+// Параметры для классического Теппинг-теста Ильина (6 квадратов по 5 сек)
 let tappingTimer = null;
-let tapCount = 0;
 let tappingTimeLeft = 30;
 let tappingActive = false;
+let currentSquare = 1;
+let squareCounts = [0, 0, 0, 0, 0, 0];
 
 let useNormsMode = false;
 
@@ -40,7 +42,7 @@ let userAnswers = {
     },
     temperament: "sanguine",
     reaction_ms: 300,
-    tapping_test: { nerve_type: "Стабильная НС" }
+    tapping_test: { nerve_type: "Стабильная НС", curve_type: "Ровный тип", count: 150 }
 };
 
 const skillOptions = [
@@ -453,74 +455,116 @@ function handleReactionClick() {
 }
 
 // ==========================================
-// 5. ТЕППИНГ-ТЕСТ
+// 5. КЛАССИЧЕСКИЙ ТЕППИНГ-ТЕСТ ИЛЬИНА (6 КВАДРАТОВ)
 // ==========================================
 function resetTappingTestUI() {
     if (tappingTimer) clearInterval(tappingTimer);
-    tapCount = 0;
+    squareCounts = [0, 0, 0, 0, 0, 0];
+    currentSquare = 1;
     tappingTimeLeft = 30;
     tappingActive = false;
 
-    const countEl = document.getElementById("tapCountDisplay");
-    const timerEl = document.getElementById("tapTimer");
-    const btn = document.getElementById("startTapBtn");
-    const promptText = document.getElementById("tapPromptText");
+    for (let i = 1; i <= 6; i++) {
+        const sq = document.getElementById(`sq${i}`);
+        const cnt = document.getElementById(`sqCount${i}`);
+        if (sq) sq.classList.remove("active");
+        if (cnt) cnt.textContent = "0";
+    }
 
-    if (countEl) countEl.textContent = "0";
+    const sq1 = document.getElementById("sq1");
+    if (sq1) sq1.classList.add("active");
+
+    const timerEl = document.getElementById("tapTimer");
+    const currNumEl = document.getElementById("currentSquareNum");
+    const btn = document.getElementById("startTapBtn");
+
     if (timerEl) timerEl.textContent = "30";
+    if (currNumEl) currNumEl.textContent = "1";
     if (btn) btn.style.display = "inline-block";
-    if (promptText) promptText.textContent = "Нажмите кнопку ниже, затем кликайте сюда!";
 }
 
-function startTappingTest() {
-    if (tappingTimer) clearInterval(tappingTimer);
-
-    tapCount = 0;
-    tappingTimeLeft = 30;
+function start6SquareTappingTest() {
+    resetTappingTestUI();
     tappingActive = true;
-
-    const countEl = document.getElementById("tapCountDisplay");
-    const timerEl = document.getElementById("tapTimer");
-    const btn = document.getElementById("startTapBtn");
-    const promptText = document.getElementById("tapPromptText");
-
-    if (countEl) countEl.textContent = "0";
-    if (timerEl) timerEl.textContent = "30";
-    if (btn) btn.style.display = "none";
-    if (promptText) promptText.textContent = "ЖМИТЕ МАКСИМАЛЬНО БЫСТРО!";
+    document.getElementById("startTapBtn").style.display = "none";
 
     tappingTimer = setInterval(() => {
         tappingTimeLeft--;
+        const timerEl = document.getElementById("tapTimer");
         if (timerEl) timerEl.textContent = tappingTimeLeft;
+
+        const elapsedSec = 30 - tappingTimeLeft;
+        if (elapsedSec > 0 && elapsedSec % 5 === 0 && elapsedSec < 30) {
+            currentSquare++;
+            highlightActiveSquare(currentSquare);
+        }
 
         if (tappingTimeLeft <= 0) {
             clearInterval(tappingTimer);
             tappingActive = false;
-            finishTappingTest();
+            finish6SquareTappingTest();
         }
     }, 1000);
 }
 
-function registerTap(event) {
-    if (!tappingActive) return;
-
-    tapCount++;
-    const countEl = document.getElementById("tapCountDisplay");
-    if (countEl) countEl.textContent = tapCount;
-
-    const tapArea = document.getElementById("tapArea");
-    if (tapArea) {
-        tapArea.classList.add("tap-active");
-        setTimeout(() => tapArea.classList.remove("tap-active"), 80);
+function highlightActiveSquare(sqNum) {
+    for (let i = 1; i <= 6; i++) {
+        const sq = document.getElementById(`sq${i}`);
+        if (sq) sq.classList.remove("active");
     }
+    const activeSq = document.getElementById(`sq${sqNum}`);
+    if (activeSq) activeSq.classList.add("active");
+    
+    const currNumEl = document.getElementById("currentSquareNum");
+    if (currNumEl) currNumEl.textContent = sqNum;
+    
+    if (navigator.vibrate) navigator.vibrate(80);
 }
 
-async function finishTappingTest() {
-    let nerveType = "Стабильная НС";
-    if (tapCount > 180) nerveType = "Сильная НС";
-    else if (tapCount < 120) nerveType = "Слабая НС";
+function registerSquareTap(sqNum) {
+    if (!tappingActive) return;
+    if (sqNum !== currentSquare) return;
 
-    userAnswers.tapping_test = { nerve_type: nerveType, count: tapCount };
+    squareCounts[sqNum - 1]++;
+    const cntEl = document.getElementById(`sqCount${sqNum}`);
+    if (cntEl) cntEl.textContent = squareCounts[sqNum - 1];
+}
+
+function analyzeIlyinTapping(counts) {
+    const [N1, N2, N3, N4, N5, N6] = counts;
+    const total = counts.reduce((a, b) => a + b, 0);
+
+    const maxEarly = Math.max(N2, N3);
+    
+    let type = "Ровный тип";
+    let nerveType = "Средняя сила НС";
+
+    if (maxEarly > N1 && N6 < N1) {
+        type = "Выпуклый тип";
+        nerveType = "Сильная НС";
+    } else if (N2 < N1 && N3 <= N2 && N4 <= N3) {
+        type = "Нисходящий тип";
+        nerveType = "Слабая НС";
+    } else if (N1 >= N2 && N3 < N2) {
+        type = "Промежуточный тип";
+        nerveType = "Средне-слабая НС";
+    } else if (N2 < N1 && (N4 > N3 || N5 > N4)) {
+        type = "Вогнутый тип";
+        nerveType = "Средне-слабая НС (с мобилизацией)";
+    }
+
+    return { total, type, nerveType, counts };
+}
+
+async function finish6SquareTappingTest() {
+    const analysis = analyzeIlyinTapping(squareCounts);
+    
+    userAnswers.tapping_test = {
+        nerve_type: `${analysis.nerveType} (${analysis.type})`,
+        curve_type: analysis.type,
+        count: analysis.total,
+        details: analysis.counts
+    };
 
     showScreen("resultsScreen");
     await fetchServerGigaChatAI();

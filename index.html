@@ -22,20 +22,16 @@
                 }
             }
 
-            // Мгновенный вызов инициализации
             initVK();
-
             if (document.readyState === "loading") {
                 document.addEventListener("DOMContentLoaded", initVK);
             }
-
-            // Резервный таймер для гарантированного снятия заставки VK
             window.addEventListener("load", initVK);
             setTimeout(initVK, 800);
         })();
     </script>
 
-    <link rel="stylesheet" href="style.css?v=500.0">
+    <link rel="stylesheet" href="style.css?v=700.0">
 </head>
 <body>
     <div class="app-container">
@@ -57,11 +53,10 @@
                 <img src="stas.png" alt="Бельчонок Стас" class="mascot-img-large">
                 <div class="welcome-text">
                     <h2>Привет! Я СТАС — твой спортивный агент</h2>
-                    <p>Пройди комплексное тестирование (антропометрия, психотип, сенсомоторная реакция и <b>30-секундный Теппинг-тест Ильина</b>). Наш сервис сформирует точный математический расчёт совместимости с секциями Лангепаса!</p>
+                    <p>Пройди комплексное тестирование (антропометрия, психотип, сенсомоторная реакция и <b>классический Теппинг-тест Е.П. Ильина по 6 квадратам</b>). Наш сервис сформирует точный расчёт совместимости с секциями Лангепаса!</p>
                 </div>
             </div>
 
-            <!-- Переключатель режима ОФП -->
             <div class="mode-selection-box">
                 <button type="button" id="modeBtn" class="btn-mode-toggle" onclick="toggleNormsMode()">
                     📋 Я знаю свои результаты нормативов по физической подготовке
@@ -95,21 +90,40 @@
             <button type="button" id="startReactionBtn" class="btn-primary" onclick="startReactionTest()">🚀 НАЧАТЬ ТЕСТ РЕАКЦИИ</button>
         </div>
 
-        <!-- ЭКРАН 4: Теппинг-тест -->
+        <!-- ЭКРАН 4: Классический Теппинг-тест Е.П. Ильина (6 квадратов) -->
         <div id="tappingScreen" class="card-screen hidden">
             <div class="tapping-header">
-                <h2>⏱️ Теппинг-тест Е.П. Ильина</h2>
-                <p>Определяем силу нервной системы. Нажмите "НАЧАТЬ ТЕСТ", а затем кликайте по области ниже максимально быстро в течение <b>30 секунд</b>!</p>
+                <h2>⏱️ Экспресс-диагностика НС (Тест Ильина)</h2>
+                <p class="subtitle-text">Определение силы нервной системы и динамики работоспособности</p>
             </div>
+
+            <!-- Инструкция перед началом теста -->
+            <div class="test-instruction-box">
+                <h3>📋 Инструкция по прохождению:</h3>
+                <ul>
+                    <li><b>Максимальный темп:</b> Кликайте (тапайте) по квадрату как можно чаще и быстрее.</li>
+                    <li><b>Следите за зелёным цветом:</b> Нажимайте <u>СТРОГО</u> по подсвеченному <b>ЗЕЛЁНОМУ</b> квадрату.</li>
+                    <li><b>Автоматический переход:</b> Каждые <b>5 секунд</b> активный квадрат переключается по часовой стрелке. Тест длится ровно <b>30 секунд</b>.</li>
+                    <li><b>Не останавливайтесь:</b> Переходите к следующему квадрату мгновенно, не снижая темп!</li>
+                </ul>
+            </div>
+
             <div class="tapping-timer-box">
                 <div class="timer-value" id="tapTimer">30</div>
-                <div class="timer-label">секунд осталось</div>
+                <div class="timer-label">секунд всего (активен квадрат <span id="currentSquareNum">1</span> из 6)</div>
             </div>
-            <div id="tapArea" class="tap-button-zone" onclick="registerTap(event)">
-                <div id="tapPromptText" class="tap-prompt">Нажмите кнопку ниже, затем кликайте сюда!</div>
-                <div id="tapCountDisplay" class="tap-count-big">0</div>
+
+            <!-- Сетка из 6 квадратов Ильина -->
+            <div class="tapping-grid-container" id="tappingGrid">
+                <div class="tap-square active" id="sq1" onclick="registerSquareTap(1)"><span>1</span><b id="sqCount1">0</b></div>
+                <div class="tap-square" id="sq2" onclick="registerSquareTap(2)"><span>2</span><b id="sqCount2">0</b></div>
+                <div class="tap-square" id="sq3" onclick="registerSquareTap(3)"><span>3</span><b id="sqCount3">0</b></div>
+                <div class="tap-square" id="sq6" onclick="registerSquareTap(6)"><span>6</span><b id="sqCount6">0</b></div>
+                <div class="tap-square" id="sq5" onclick="registerSquareTap(5)"><span>5</span><b id="sqCount5">0</b></div>
+                <div class="tap-square" id="sq4" onclick="registerSquareTap(4)"><span>4</span><b id="sqCount4">0</b></div>
             </div>
-            <button type="button" id="startTapBtn" class="btn-primary" onclick="startTappingTest()">🚀 НАЧАТЬ ТЕСТ (30 сек)</button>
+
+            <button type="button" id="startTapBtn" class="btn-primary" onclick="start6SquareTappingTest()">🚀 ПОНЯТНО, НАЧАТЬ ТЕСТ ИЛЬИНА</button>
         </div>
 
         <!-- ЭКРАН 5: Результаты -->
@@ -176,6 +190,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=500.0"></script>
+    <script src="app.js?v=700.0"></script>
 </body>
 </html>
