@@ -2,7 +2,7 @@
 // 1. КОНФИГУРАЦИЯ И ИНИЦИАЛИЗАЦИЯ
 // ==========================================
 
-const API_URL = "https://stas-api.onrender.com";
+const API_URL = "https://sportivnyj-agent-archerus.amvera.io";
 
 let currentQuizStep = 0;
 let reactionStartTime = 0;

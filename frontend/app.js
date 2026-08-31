@@ -1,10 +1,8 @@
 // ==========================================
-// 1. КОНФИГУРАЦИЯ И СОСТОЯНИЕ
+// 1. КОНФИГУРАЦИЯ И ИНИЦИАЛИЗАЦИЯ
 // ==========================================
 
-const API_URL = (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost")
-    ? "http://127.0.0.1:8000"
-    : "";
+const API_URL = "https://sportivnyj-agent-archerus.amvera.io";
 
 let currentQuizStep = 0;
 let reactionStartTime = 0;
@@ -72,26 +70,23 @@ const temperamentRu = {
 };
 
 // ==========================================
-// 2. ИНИЦИАЛИЗАЦИЯ VK BRIDGE ПРИ ЗАГРУЗКЕ
+// 2. ЗАГРУЗКА ДАННЫХ И ПРОВЕРКА СВЯЗИ
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    initVkBridgeData();
+    showScreen("welcomeScreen");
+    fetchUserData();
     checkApiConnection();
 });
 
-function initVkBridgeData() {
-    if (window.vkBridge) {
-        window.vkBridge.send("VKWebAppInit")
-            .then(() => console.log("[VK Bridge] Initialized in app.js"))
-            .catch(() => {});
-
+function fetchUserData() {
+    if (window.vkBridge && typeof window.vkBridge.send === 'function') {
         window.vkBridge.send('VKWebAppGetUserInfo')
             .then((user) => {
                 if (user && user.first_name) {
                     userAnswers.full_name = `${user.first_name} ${user.last_name}`;
                 }
             })
-            .catch(() => {});
+            .catch((e) => console.log("[STAS] User info mode:", e.message));
     }
 }
 
@@ -104,7 +99,7 @@ async function checkApiConnection() {
             statusEl.classList.add("connected");
         }
     } catch (e) {
-        console.log("Health check error:", e);
+        console.log("[STAS] Health check mode:", e);
     }
 }
 
@@ -115,8 +110,10 @@ function showScreen(screenId) {
         if (el) {
             if (id === screenId) {
                 el.classList.remove("hidden");
+                el.style.display = "block";
             } else {
                 el.classList.add("hidden");
+                el.style.display = "none";
             }
         }
     });
@@ -124,7 +121,7 @@ function showScreen(screenId) {
 }
 
 // ==========================================
-// 3. УПРАВЛЕНИЕ КВИЗОМ
+// 3. ЛОГИКА КВИЗА
 // ==========================================
 function startQuiz() {
     currentQuizStep = 0;
@@ -236,7 +233,7 @@ function prevStep() {
 }
 
 // ==========================================
-// 4. ТЕСТ НА СЕНСОМОТОРНУЮ РЕАКЦИЮ
+// 4. ТЕСТ РЕАКЦИИ
 // ==========================================
 function resetReactionTestUI() {
     if (reactionTimer) clearTimeout(reactionTimer);
@@ -303,7 +300,7 @@ function handleReactionClick() {
 }
 
 // ==========================================
-// 5. ТЕППИНГ-ТЕСТ ИЛЬИНА
+// 5. ТЕППИНГ-ТЕСТ
 // ==========================================
 function resetTappingTestUI() {
     if (tappingTimer) clearInterval(tappingTimer);
@@ -377,7 +374,7 @@ async function finishTappingTest() {
 }
 
 // ==========================================
-// 6. ОТПРАВКА В БЭКЕНД И ОТРИСОВКА ДАШБОРДА
+// 6. РАСЧЕТ И ОТРИСОВКА РЕЗУЛЬТАТОВ
 // ==========================================
 function calculateAge(birthDateString) {
     if (!birthDateString) return 8;

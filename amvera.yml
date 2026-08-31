@@ -4,5 +4,7 @@ meta:
 build:
   requirementsPath: requirements.txt
 run:
+  scriptName: main.py
   command: uvicorn main:app --host 0.0.0.0 --port 80
   persistenceMounted: /data
+  containerPort: 80
