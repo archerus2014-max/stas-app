@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- Подключаем VK Bridge -->
-    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
-
     <link rel="stylesheet" href="style.css?v=300.0">
 </head>
 <body>
@@ -141,12 +138,23 @@
         </div>
     </div>
 
+    <!-- 1. Загружаем скрипт логики -->
     <script src="app.js?v=300.0"></script>
+
+    <!-- 2. Загружаем VK Bridge и инициализируем его strictly по загрузке -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
     <script>
-        // Гарантированная инициализация VK Bridge
-        if (window.vkBridge) {
-            vkBridge.send("VKWebAppInit");
-        }
+        document.addEventListener("DOMContentLoaded", function() {
+            if (window.vkBridge) {
+                vkBridge.send("VKWebAppInit")
+                    .then(function() {
+                        vkBridge.send("VKWebAppHideLoadingScreen");
+                    })
+                    .catch(function(err) {
+                        console.log("VK Bridge Error:", err);
+                    });
+            }
+        });
     </script>
 </body>
 </html>
