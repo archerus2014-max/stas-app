@@ -36,7 +36,6 @@ body {
     display: block !important;
 }
 
-/* Гарантированный показ интерфейса внутри iframe VK */
 html, body {
     position: relative !important;
     z-index: 1 !important;
@@ -91,7 +90,7 @@ html, body {
     color: #15803d;
 }
 
-/* Карточки экранов */
+/* Экранные блоки */
 .card-screen {
     animation: fadeIn 0.3s ease;
 }
@@ -103,7 +102,7 @@ html, body {
 
 .mascot-box {
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .mascot-img-large {
@@ -125,7 +124,36 @@ html, body {
     color: #475569;
 }
 
-/* Кнопки управления */
+/* Кнопка переключения режима ОФП */
+.mode-selection-box {
+    margin-bottom: 20px;
+}
+
+.btn-mode-toggle {
+    width: 100%;
+    background: #f8fafc;
+    border: 2px dashed #0077ff;
+    color: #0077ff;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.btn-mode-toggle:hover {
+    background: #f0f7ff;
+}
+
+.btn-mode-toggle.active {
+    background: #0077ff;
+    color: #ffffff;
+    border-style: solid;
+}
+
+/* Управление кнопками */
 .btn-primary {
     width: 100%;
     background: #0077ff;
@@ -165,7 +193,7 @@ html, body {
     cursor: pointer;
 }
 
-/* Шкала прогресса */
+/* Прогресс-бар */
 .progress-bar-container {
     margin-bottom: 20px;
 }
@@ -212,7 +240,41 @@ html, body {
     border-color: #0077ff;
 }
 
-/* Карточки интерактивного выбора */
+/* Стилизация нормативного блока */
+.normative-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.normative-desc {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.normative-avg {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0077ff;
+    margin-bottom: 12px;
+}
+
+.normative-input-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.normative-unit {
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+/* Сетка выбора */
 .cards-select-grid {
     display: flex;
     flex-direction: column;
@@ -244,7 +306,7 @@ html, body {
     font-weight: bold;
 }
 
-/* Модули тестов */
+/* Модули интерактива */
 .tapping-header {
     text-align: center;
     margin-bottom: 20px;
@@ -306,7 +368,7 @@ html, body {
     color: #0f172a;
 }
 
-/* Экран результатов */
+/* Дашборд результатов */
 .dashboard-header-card {
     display: flex;
     justify-content: space-between;

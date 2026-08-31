@@ -37,7 +37,6 @@ async def add_vk_iframe_headers(request: Request, call_next):
 
 GIGACHAT_CREDENTIALS = os.getenv("GIGACHAT_CREDENTIALS", "")
 VK_CONFIRMATION_CODE = os.getenv("VK_CONFIRMATION_CODE", "a23e9568")
-VK_SECRET_KEY = os.getenv("VK_SECRET_KEY", "f5b76090b2395159999dc866fd3e79b0")
 
 FEMALE_ONLY_SPORTS = [
     "художественная гимнастика",
@@ -71,7 +70,6 @@ def load_sports_from_excel() -> Tuple[List[Dict], List[Dict]]:
             break
 
     if not target_file:
-        print("[Excel Warning]: Файл Excel не найден.")
         return [], []
 
     try:
@@ -132,7 +130,6 @@ def load_sports_from_excel() -> Tuple[List[Dict], List[Dict]]:
 
         return langepas_sports, other_sports
     except Exception as e:
-        print(f"[Excel Read Error]: {e}")
         return [], []
 
 
@@ -145,6 +142,17 @@ class PhysicalSkills(BaseModel):
     endurance: int = 5
 
 
+class NormativeData(BaseModel):
+    pullups: Optional[float] = 1.0
+    flexibility_cm: Optional[float] = 8.0
+    situps: Optional[float] = 29.0
+    long_jump_cm: Optional[float] = 134.0
+    shuttle_run_sec: Optional[float] = 9.0
+    run_30m_sec: Optional[float] = 6.0
+    pushups: Optional[float] = 10.0
+    target_throw: Optional[float] = 3.0
+
+
 class AthletePayload(BaseModel):
     full_name: str
     age: int
@@ -154,6 +162,7 @@ class AthletePayload(BaseModel):
     father_height_cm: float
     mother_height_cm: float
     physical: Optional[PhysicalSkills] = None
+    normatives: Optional[NormativeData] = None
     temperament: str
     reaction_ms: int
     nerve_type: str
@@ -196,17 +205,16 @@ def ask_gigachat(prompt_text: str, credentials: str) -> Optional[str]:
             {
                 "role": "system",
                 "content": (
-                    "Ты — Бельчонок СТАС, спортивный агент СШОР «Академия спорта» г. Лангепас. "
-                    "Пиши экспертно, мотивирующе и лаконично. "
-                    "ОГРАНИЧЕНИЕ: Текст не более 1200-1500 символов (2-3 емких абзаца)! "
-                    "Учитывай возраст ребенка, сенситивные периоды развития, пол, "
-                    "типологию нервной системы по Теппинг-тесту Ильина и время реакции."
+                    "Ты — Бельчонок СТАС, дружелюбный спортивный агент СШОР «Академия спорта» г. Лангепас. "
+                    "Обращайся strictly НАПРЯМУЮ К ТЕСТИРУЕМОМУ по имени: '[Имя], ты большой(ая) молодец! ...' "
+                    "Объясняй спортивные успехи научно (сенситивные периоды развития В.П. Филина и В.К. Бальсевича). "
+                    "Упоминай ТОЛЬКО ТЕ ВИДЫ СПОРТА, которые прямо рекомендуются в дашборде!"
                 )
             },
             {"role": "user", "content": prompt_text}
         ],
-        "temperature": 0.7,
-        "max_tokens": 600
+        "temperature": 0.6,
+        "max_tokens": 650
     }
     try:
         response = requests.post(url, headers=headers, json=payload, verify=False, timeout=12)
@@ -227,66 +235,53 @@ def calculate_sport_score(sport: dict, p: PhysicalSkills, payload: AthletePayloa
     if payload.sex == "male" and any(fem in name_low for fem in FEMALE_ONLY_SPORTS):
         return None
 
-    if payload.reaction_ms <= 220:
+    if payload.reaction_ms <= 250:
         react_score = 10.0
-    elif payload.reaction_ms <= 280:
-        react_score = 8.0
     elif payload.reaction_ms <= 350:
+        react_score = 8.0
+    elif payload.reaction_ms <= 500:
         react_score = 6.0
-    else:
+    elif payload.reaction_ms <= 700:
         react_score = 4.0
+    else:
+        react_score = 2.0
 
-    name_hash = int(hashlib.md5(name_low.encode('utf-8')).hexdigest(), 16)
-    unique_offset = ((name_hash % 11) - 5) * 0.015
+    if any(w in name_low for w in ["акробат", "батут", "гимнаст", "рок-н-ролл", "брейкинг"]):
+        raw_skill = p.coordination * 0.35 + p.flexibility * 0.35 + p.speed_strength * 0.15 + p.speed * 0.15
+        nerve_weight = 1.15 if "слабая" in payload.nerve_type.lower() or "стабильная" in payload.nerve_type.lower() else 0.90
 
-    if any(w in name_low for w in ["акробат", "батут", "гимнаст", "рок-н-ролл", "брейкинг", "аэробик", "танцевальный", "фигурное", "скалолазание"]):
-        raw_skill = p.coordination * 0.38 + p.flexibility * 0.32 + p.speed * 0.15 + p.speed_strength * 0.15
-        age_weight = 1.25 if payload.age <= 8 else (1.00 if payload.age <= 11 else 0.80)
-        nerve_weight = 1.20 if "слабая" in payload.nerve_type.lower() or "стабильная" in payload.nerve_type.lower() else 0.90
-
-    elif any(w in name_low for w in ["бокс", "дзюдо", "самбо", "борьб", "единоборств", "мма", "грэпплинг", "грепплинг", "тхэквондо", "муайтай", "каратэ", "рукопашн", "фехтование", "кикбоксинг"]):
-        raw_skill = react_score * 0.30 + p.speed * 0.25 + p.strength * 0.25 + p.endurance * 0.20
-        age_weight = 0.70 if payload.age <= 7 else (1.20 if payload.age <= 12 else 1.10)
-        nerve_weight = 1.25 if "сильная" in payload.nerve_type.lower() else 0.85
-
-    elif any(w in name_low for w in ["лук", "шахмат", "стрельб", "дартс", "бильярд", "го"]):
-        raw_skill = react_score * 0.40 + p.coordination * 0.40 + p.endurance * 0.20
-        age_weight = 0.65 if payload.age <= 8 else 1.25
-        nerve_weight = 1.30 if "слабая" in payload.nerve_type.lower() or "стабильная" in payload.nerve_type.lower() else 0.75
-
-    elif any(w in name_low for w in ["тяжёлая атлетика", "пауэрлифт", "гирев", "силовой", "бодибилдинг", "армрестлинг"]):
-        if "армрестлинг" in name_low:
-            raw_skill = p.strength * 0.50 + react_score * 0.30 + p.coordination * 0.20
-        elif "бодибилдинг" in name_low:
-            raw_skill = p.strength * 0.40 + p.endurance * 0.30 + p.flexibility * 0.30
-        elif "гиревой" in name_low:
-            raw_skill = p.endurance * 0.50 + p.strength * 0.35 + p.speed_strength * 0.15
-        else:
-            raw_skill = p.strength * 0.50 + p.speed_strength * 0.35 + p.coordination * 0.15
-
-        age_weight = 0.40 if payload.age <= 8 else (0.75 if payload.age <= 9 else 1.30)
+    elif any(w in name_low for w in ["бокс", "дзюдо", "самбо", "борьб", "единоборств", "мма", "грэпплинг", "грепплинг", "тхэквондо", "кикбоксинг"]):
+        raw_skill = react_score * 0.25 + p.speed * 0.25 + p.strength * 0.20 + p.coordination * 0.15 + p.endurance * 0.15
         nerve_weight = 1.20 if "сильная" in payload.nerve_type.lower() else 0.85
 
-    elif any(w in name_low for w in ["плаван", "лыжн", "биатлон", "бег", "велосипед", "конькобеж", "гребля", "триатлон", "легкая атлетика"]):
-        raw_skill = p.endurance * 0.45 + p.speed * 0.30 + p.coordination * 0.25
-        age_weight = 1.10 if payload.age >= 8 else 0.90
+    elif any(w in name_low for w in ["лук", "шахмат", "стрельб", "дартс", "го"]):
+        raw_skill = react_score * 0.35 + p.coordination * 0.45 + p.endurance * 0.20
+        nerve_weight = 1.25 if "флегматик" in payload.temperament.lower() or "меланхолик" in payload.temperament.lower() or "стабильная" in payload.nerve_type.lower() else 0.80
+
+    elif any(w in name_low for w in ["тяжёлая атлетика", "пауэрлифт", "гирев", "силовой"]):
+        raw_skill = p.strength * 0.50 + p.speed_strength * 0.30 + p.endurance * 0.20
+        nerve_weight = 1.15 if "сильная" in payload.nerve_type.lower() else 0.85
+
+    elif any(w in name_low for w in ["лыжн", "биатлон", "бег", "плавание", "велосипед", "конькобеж", "легкая атлетика"]):
+        raw_skill = p.endurance * 0.45 + p.speed * 0.30 + p.speed_strength * 0.15 + p.coordination * 0.10
         nerve_weight = 1.05
 
-    elif any(w in name_low for w in ["баскетбол", "волейбол", "водное поло", "бадминтон", "футбол", "хоккей", "теннис", "гандбол", "регби"]):
-        raw_skill = p.speed * 0.30 + p.coordination * 0.30 + p.speed_strength * 0.25 + react_score * 0.15
+    elif any(w in name_low for w in ["баскетбол", "волейбол", "футбол", "хоккей", "теннис", "гандбол"]):
+        raw_skill = p.speed * 0.25 + p.coordination * 0.30 + p.speed_strength * 0.25 + react_score * 0.20
         if any(h in name_low for h in ["баскетбол", "волейбол"]):
-            height_bonus = 1.25 if ((payload.sex == "male" and predicted_height >= 180) or (payload.sex == "female" and predicted_height >= 172)) else 0.90
+            height_bonus = 1.20 if ((payload.sex == "male" and predicted_height >= 180) or (payload.sex == "female" and predicted_height >= 172)) else 0.85
             raw_skill *= height_bonus
-        age_weight = 0.85 if payload.age <= 7 else 1.20
-        nerve_weight = 1.15 if "холерик" in payload.temperament.lower() or "сангвиник" in payload.temperament.lower() or "сильная" in payload.nerve_type.lower() else 0.95
+        nerve_weight = 1.15 if "холерик" in payload.temperament.lower() or "сангвиник" in payload.temperament.lower() else 0.95
 
     else:
-        raw_skill = p.coordination * 0.30 + p.speed * 0.25 + p.endurance * 0.25 + p.strength * 0.20
-        age_weight = 1.00
+        raw_skill = p.coordination * 0.25 + p.speed * 0.25 + p.endurance * 0.25 + p.strength * 0.25
         nerve_weight = 1.00
 
-    model_score = (raw_skill * 8.2) * age_weight * nerve_weight * (1.0 + unique_offset)
-    final_score = min(98, max(55, int(model_score)))
+    name_hash = int(hashlib.md5(name_low.encode('utf-8')).hexdigest(), 16)
+    unique_offset = ((name_hash % 13) - 6) * 0.8
+
+    model_score = (raw_skill * 8.5) * nerve_weight + unique_offset
+    final_score = min(98, max(52, int(model_score)))
 
     sog_age = sport.get("sog_age")
     if payload.age >= sport["np1_age"]:
@@ -357,26 +352,26 @@ async def analyze_athlete(payload: AthletePayload):
     other_scores.sort(key=lambda x: x["score"], reverse=True)
     other_top_sports = other_scores[:3]
 
+    top_names_str = ", ".join([f"«{item['sport_name']}»" for item in top_sports])
+
     user_prompt = (
-        f"Проанализируй комплексный научно-методический профиль ребенка (с учетом исследований ХМАО-Югры 2024 г.):\n"
-        f"- Имя: {payload.full_name}, Возраст: {payload.age} лет, Пол: {'Мальчик' if payload.sex == 'male' else 'Девочка'}\n"
-        f"- Антропометрия: Рост {payload.height_cm} см, Вес {payload.weight_kg} кг, ИМТ {bmi}, Прогноз роста {predicted_height} см\n"
-        f"- Сенсомоторная реакция: {payload.reaction_ms} мс\n"
-        f"- Типология НС по Теппинг-тесту Ильина: {payload.nerve_type}\n"
-        f"- Темперамент: {temp_str}\n"
-        f"Сформируй ЕМКОЕ экспертное заключение (до 1500 символов, 2-3 абзаца). Объясни, как физиологические параметры, Теппинг-тест и пол ребенка определили его готовность к зачислению в секции Лангепаса."
+        f"Напиши личное обращение к тестируемому по имени {payload.full_name}.\n"
+        f"Пол: {'Девочка' if payload.sex == 'female' else 'Мальчик'}, Возраст: {payload.age} лет.\n"
+        f"Антропометрия: Рост {payload.height_cm} см, Вес {payload.weight_kg} кг, ИМТ {bmi}, Прогноз роста {predicted_height} см.\n"
+        f"Сенсомоторная реакция: {payload.reaction_ms} мс. Нервная система: {payload.nerve_type}. Темперамент: {temp_str}.\n"
+        f"Рекомендованные секции из дашборда: {top_names_str}.\n\n"
+        f"Требование к тексту: Похвали ребенка по имени ({payload.full_name}), объясни его научно-спортивный потенциал "
+        f"и обоснуй, почему ему подходят ИМЕННО ЭТИ секции: {top_names_str}."
     )
 
     ai_summary = ask_gigachat(user_prompt, GIGACHAT_CREDENTIALS)
 
     if not ai_summary:
-        sex_str = "мальчика" if payload.sex == "male" else "девочки"
         ai_summary = (
-            f"Привет! Я Бельчонок СТАС из СШОР «Академия спорта» г. Лангепас.\n\n"
-            f"Наш расчёт для {sex_str} {payload.full_name} ({payload.age} лет) завершён. "
-            f"Индекс массы тела составляет {bmi} кг/м², а генетический прогноз роста — около {predicted_height} см.\n\n"
-            f"Тип нервной системы по Теппинг-тесту Ильина ('{payload.nerve_type}') и показатели реакции ({payload.reaction_ms} мс) "
-            f"подтверждают отличную предрасположенность к физическим нагрузкам в рекомендуемых секциях города!"
+            f"{payload.full_name}, ты большой молодец! "
+            f"Твои физические показатели (рост {payload.height_cm} см, ИМТ {bmi}) и тип нервной системы ({payload.nerve_type}) "
+            f"показывают замечательную предрасположенность к занятиям спортом. "
+            f"На основе твоих результатов наиболее подходящими секциями являются: {top_names_str}!"
         )
 
     return JSONResponse(content={

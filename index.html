@@ -21,7 +21,7 @@
         }
     </script>
 
-    <link rel="stylesheet" href="style.css?v=300.0">
+    <link rel="stylesheet" href="style.css?v=330.0">
 </head>
 <body>
     <div class="app-container">
@@ -46,6 +46,14 @@
                     <p>Пройди комплексное тестирование (антропометрия, психотип, сенсомоторная реакция и <b>30-секундный Теппинг-тест Ильина</b>). Наш сервис сформирует точный математический расчёт совместимости с секциями Лангепаса!</p>
                 </div>
             </div>
+
+            <!-- Переключатель режима ОФП -->
+            <div class="mode-selection-box">
+                <button type="button" id="modeBtn" class="btn-mode-toggle" onclick="toggleNormsMode()">
+                    📋 Я знаю свои результаты нормативов по физической подготовке
+                </button>
+            </div>
+
             <button type="button" class="btn-primary" onclick="startQuiz()">Начать тестирование ➔</button>
         </div>
 
@@ -154,6 +162,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=310.0"></script>
+    <script src="app.js?v=330.0"></script>
 </body>
 </html>

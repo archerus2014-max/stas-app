@@ -14,6 +14,8 @@ let tapCount = 0;
 let tappingTimeLeft = 30;
 let tappingActive = false;
 
+let useNormsMode = false;
+
 let userAnswers = {
     full_name: "",
     birth_date: "15.05.2016",
@@ -25,6 +27,16 @@ let userAnswers = {
     physical: {
         speed: 6, strength: 6, coordination: 6,
         speed_strength: 6, flexibility: 6, endurance: 6
+    },
+    normatives: {
+        pullups: 1,
+        flexibility_cm: 8,
+        situps: 29,
+        long_jump_cm: 134,
+        shuttle_run_sec: 9.0,
+        run_30m_sec: 6.0,
+        pushups: 10,
+        target_throw: 3
     },
     temperament: "sanguine",
     reaction_ms: 300,
@@ -38,22 +50,77 @@ const skillOptions = [
     { label: "Выдающийся результат / Отличная подготовка", value: 10 }
 ];
 
-const quizQuestions = [
+const baseQuestions = [
     { title: "ФИО Ребенка", field: "full_name", type: "text", placeholder: "Введите ФИО ребенка" },
     { title: "Дата рождения (ДД.ММ.ГГГГ)", field: "birth_date", type: "date_text", placeholder: "15.05.2016" },
     { title: "Пол ребенка", field: "sex", type: "gender_cards" },
     { title: "Рост ребенка (см)", field: "height_cm", type: "number", default: 125 },
     { title: "Вес ребенка (кг)", field: "weight_kg", type: "number", default: 25 },
     { title: "Рост отца (см)", field: "father_height_cm", type: "number", default: 178 },
-    { title: "Рост матери (см)", field: "mother_height_cm", type: "number", default: 165 },
+    { title: "Рост матери (см)", field: "mother_height_cm", type: "number", default: 165 }
+];
 
+const physicalQuestions = [
     { title: "Скорость и быстрота движений", field: "speed", subfield: "physical", type: "cards_skill" },
     { title: "Сила и мышечное усилие", field: "strength", subfield: "physical", type: "cards_skill" },
     { title: "Координация и ловкость", field: "coordination", subfield: "physical", type: "cards_skill" },
     { title: "Скоростно-силовые качества (прыгучесть)", field: "speed_strength", subfield: "physical", type: "cards_skill" },
     { title: "Гибкость и подвижность суставов", field: "flexibility", subfield: "physical", type: "cards_skill" },
-    { title: "Выносливость при долгих нагрузках", field: "endurance", subfield: "physical", type: "cards_skill" },
+    { title: "Выносливость при долгих нагрузках", field: "endurance", subfield: "physical", type: "cards_skill" }
+];
 
+const normativesQuestions = [
+    { 
+        title: "Подтягивание из виса на высокой перекладине (Силовые способности)", 
+        desc: "Из положения вис хватом сверху, ноги не касаются пола. Подтянуться так, чтобы подбородок был выше перекладины, опуститься до полного выпрямления рук.",
+        avg: "Усредненный показатель: 1 раз",
+        field: "pullups", subfield: "normatives", type: "number_norm", unit: "раз", default: 1 
+    },
+    { 
+        title: "Наклон вперед из положения стоя на гимнастической скамье (Гибкость)", 
+        desc: "Наклон вперед из положения стоя с прямыми ногами на гимнастической скамье. Выполняется с фиксацией 2 секунды.",
+        avg: "Усредненный показатель: 8 см",
+        field: "flexibility_cm", subfield: "normatives", type: "number_norm", unit: "см", default: 8 
+    },
+    { 
+        title: "Поднимания туловища из положения лежа на спине (Силовые и выносливость)", 
+        desc: "Руки за головой в замок, ноги согнуты под 90°. Максимальное количество касаний локтями бедер за 1 минуту.",
+        avg: "Усредненный показатель: 29 раз/мин",
+        field: "situps", subfield: "normatives", type: "number_norm", unit: "раз/мин", default: 29 
+    },
+    { 
+        title: "Прыжок в длину с места толчком двумя ногами (Скоростно-силовые)", 
+        desc: "Отталкивание двумя ногами от линии. Измерение по перпендикуляру до ближайшего следа касания любой частью тела.",
+        avg: "Усредненный показатель: 134 см",
+        field: "long_jump_cm", subfield: "normatives", type: "number_norm", unit: "см", default: 134 
+    },
+    { 
+        title: "Челночный бег 3х10 (Скоростные и координационные)", 
+        desc: "Старт у линии, бег 10 м с пересечением линии финиша, разворот и финиш. Точность до 0,1 с.",
+        avg: "Усредненный показатель: 9 сек",
+        field: "shuttle_run_sec", subfield: "normatives", type: "number_norm", unit: "сек", default: 9 
+    },
+    { 
+        title: "Бег на 30 м (Скоростные способности)", 
+        desc: "Выполняется с высокого старта по прямой беговой дорожке с твердым покрытием. Результат фиксируется до 0,1 с.",
+        avg: "Усредненный показатель: 6 сек",
+        field: "run_30m_sec", subfield: "normatives", type: "number_norm", unit: "сек", default: 6 
+    },
+    { 
+        title: "Сгибание и разгибание рук в упоре лежа на полу (Силовые способности)", 
+        desc: "Упор лежа, руки на ширине плеч, локти не более 45°. Касание грудью пола/платформы 5 см, фиксация 1 секунда.",
+        avg: "Усредненный показатель: 10 раз",
+        field: "pushups", subfield: "normatives", type: "number_norm", unit: "раз", default: 10 
+    },
+    { 
+        title: "Метание теннисного мяча в цель с 6 метров (Координационные способности)", 
+        desc: "Метание мяча 57 г в обруч 90 см на высоте 2 м. Предоставляется 5 попыток, зачитывается число попаданий.",
+        avg: "Усредненный показатель: 3 попаданий",
+        field: "target_throw", subfield: "normatives", type: "number_norm", unit: "попаданий", default: 3 
+    }
+];
+
+const finalQuestions = [
     { title: "Темперамент и поведение ребенка", field: "temperament", type: "cards_options", options: [
         { label: "Сангвиник (живой, подвижный, общительный)", value: "sanguine" },
         { label: "Холерик (быстрый, импульсивный, энергичный)", value: "choleric" },
@@ -61,6 +128,8 @@ const quizQuestions = [
         { label: "Меланхолик (чуткий, ранимый, сдержанный)", value: "melancholic" }
     ]}
 ];
+
+let activeQuizQuestions = [];
 
 const temperamentRu = {
     sanguine: "Сангвиник",
@@ -77,6 +146,20 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchUserData();
     checkApiConnection();
 });
+
+function toggleNormsMode() {
+    useNormsMode = !useNormsMode;
+    const btn = document.getElementById("modeBtn");
+    if (btn) {
+        if (useNormsMode) {
+            btn.classList.add("active");
+            btn.textContent = "✓ Выбран режим ввода нормативов ОФП";
+        } else {
+            btn.classList.remove("active");
+            btn.textContent = "📋 Я знаю свои результаты нормативов по физической подготовке";
+        }
+    }
+}
 
 function fetchUserData() {
     if (window.vkBridge && typeof window.vkBridge.send === 'function') {
@@ -124,20 +207,25 @@ function showScreen(screenId) {
 // 3. ЛОГИКА КВИЗА
 // ==========================================
 function startQuiz() {
+    if (useNormsMode) {
+        activeQuizQuestions = [...baseQuestions, ...normativesQuestions, ...finalQuestions];
+    } else {
+        activeQuizQuestions = [...baseQuestions, ...physicalQuestions, ...finalQuestions];
+    }
     currentQuizStep = 0;
     showScreen("quizScreen");
     renderQuestion();
 }
 
 function renderQuestion() {
-    const q = quizQuestions[currentQuizStep];
+    const q = activeQuizQuestions[currentQuizStep];
     const container = document.getElementById("questionContainer");
     const indicator = document.getElementById("stepIndicator");
     const progressFill = document.getElementById("progressFill");
     const prevBtn = document.getElementById("prevBtn");
 
-    if (indicator) indicator.textContent = `Шаг ${currentQuizStep + 1} из ${quizQuestions.length}`;
-    if (progressFill) progressFill.style.width = `${((currentQuizStep + 1) / quizQuestions.length) * 100}%`;
+    if (indicator) indicator.textContent = `Шаг ${currentQuizStep + 1} из ${activeQuizQuestions.length}`;
+    if (progressFill) progressFill.style.width = `${((currentQuizStep + 1) / activeQuizQuestions.length) * 100}%`;
     if (prevBtn) prevBtn.style.display = currentQuizStep > 0 ? "inline-block" : "none";
 
     let currentValue = q.subfield ? userAnswers[q.subfield][q.field] : userAnswers[q.field];
@@ -147,6 +235,17 @@ function renderQuestion() {
         inputHtml = `<input type="text" id="quizInput" class="quiz-input" inputmode="numeric" placeholder="${q.placeholder || 'ДД.ММ.ГГГГ'}" maxlength="10" value="${currentValue || ''}" oninput="formatDateInput(this)">`;
     } else if (q.type === "text" || q.type === "number") {
         inputHtml = `<input type="${q.type}" id="quizInput" class="quiz-input" placeholder="${q.placeholder || ''}" value="${currentValue || ''}">`;
+    } else if (q.type === "number_norm") {
+        inputHtml = `
+            <div class="normative-card">
+                ${q.desc ? `<p class="normative-desc">${q.desc}</p>` : ''}
+                ${q.avg ? `<p class="normative-avg">${q.avg}</p>` : ''}
+                <div class="normative-input-box">
+                    <input type="number" id="quizInput" class="quiz-input" step="0.1" placeholder="Результат" value="${currentValue !== undefined ? currentValue : (q.default || '')}">
+                    <span class="normative-unit">${q.unit}</span>
+                </div>
+            </div>
+        `;
     } else if (q.type === "gender_cards") {
         const activeSex = userAnswers.sex || "female";
         inputHtml = `
@@ -204,21 +303,29 @@ function formatDateInput(input) {
 }
 
 function saveCurrentAnswer() {
-    const q = quizQuestions[currentQuizStep];
+    const q = activeQuizQuestions[currentQuizStep];
     const input = document.getElementById("quizInput");
-    if (input && q && (q.type === "text" || q.type === "number" || q.type === "date_text")) {
+    if (input && q) {
         let val = input.value;
-        if (q.type === "number") val = parseFloat(val) || 0;
-        userAnswers[q.field] = val;
+        if (q.type === "number" || q.type === "number_norm") val = parseFloat(val) || 0;
+        
+        if (q.subfield) {
+            userAnswers[q.subfield][q.field] = val;
+        } else {
+            userAnswers[q.field] = val;
+        }
     }
 }
 
 function nextStep() {
     saveCurrentAnswer();
-    if (currentQuizStep < quizQuestions.length - 1) {
+    if (currentQuizStep < activeQuizQuestions.length - 1) {
         currentQuizStep++;
         renderQuestion();
     } else {
+        if (useNormsMode) {
+            calculatePhysicalFromNorms();
+        }
         showScreen("reactionScreen");
         resetReactionTestUI();
     }
@@ -230,6 +337,48 @@ function prevStep() {
         currentQuizStep--;
         renderQuestion();
     }
+}
+
+// Пересчет нормативов ОФП в баллы профиля физических качеств
+function calculatePhysicalFromNorms() {
+    const n = userAnswers.normatives;
+
+    // 1. Силовые способности
+    let pullScore = (n.pullups / 3) * 4; 
+    let pushScore = (n.pushups / 15) * 4;
+    let situpsScore = (n.situps / 35) * 2;
+    let strength = Math.min(10, Math.max(1, Math.round(pullScore + pushScore + situpsScore)));
+
+    // 2. Гибкость
+    let flexibility = Math.min(10, Math.max(1, Math.round((n.flexibility_cm / 12) * 8 + 2)));
+
+    // 3. Выносливость
+    let endurance = Math.min(10, Math.max(1, Math.round((n.situps / 35) * 7 + (n.pushups / 15) * 3)));
+
+    // 4. Скоростно-силовые способности
+    let speed_strength = Math.min(10, Math.max(1, Math.round((n.long_jump_cm / 160) * 8 + 2)));
+
+    // 5. Скоростные способности
+    let speedVal = 6;
+    if (n.run_30m_sec > 0) {
+        speedVal = Math.min(10, Math.max(1, Math.round((5.0 / n.run_30m_sec) * 8 + 2)));
+    } else if (n.shuttle_run_sec > 0) {
+        speedVal = Math.min(10, Math.max(1, Math.round((8.0 / n.shuttle_run_sec) * 8 + 2)));
+    }
+
+    // 6. Координационные способности
+    let coordTarget = (n.target_throw / 5) * 6;
+    let coordShuttle = (8.5 / n.shuttle_run_sec) * 4;
+    let coordination = Math.min(10, Math.max(1, Math.round(coordTarget + coordShuttle)));
+
+    userAnswers.physical = {
+        speed: speedVal,
+        strength: strength,
+        coordination: coordination,
+        speed_strength: speed_strength,
+        flexibility: flexibility,
+        endurance: endurance
+    };
 }
 
 // ==========================================
@@ -406,7 +555,7 @@ async function fetchServerGigaChatAI() {
     const displayName = userAnswers.full_name.trim() || "Юный спортсмен";
     if (nameEl) nameEl.textContent = displayName;
     if (subEl) subEl.textContent = `${userAnswers.height_cm} см | ${userAnswers.weight_kg} кг`;
-    if (aiTextEl) aiTextEl.innerHTML = "<p style='color: #0077ff; font-weight: bold;'>Бельчонок СТАС проводит 4-компонентный расчёт...</p>";
+    if (aiTextEl) aiTextEl.innerHTML = "<p style='color: #0077ff; font-weight: bold;'>Бельчонок СТАС проводит расчёт алгоритма...</p>";
 
     const payload = {
         full_name: String(displayName),
@@ -417,6 +566,7 @@ async function fetchServerGigaChatAI() {
         father_height_cm: parseFloat(userAnswers.father_height_cm),
         mother_height_cm: parseFloat(userAnswers.mother_height_cm),
         physical: userAnswers.physical,
+        normatives: useNormsMode ? userAnswers.normatives : null,
         temperament: String(userAnswers.temperament),
         reaction_ms: parseInt(userAnswers.reaction_ms),
         nerve_type: String(userAnswers.tapping_test.nerve_type)
