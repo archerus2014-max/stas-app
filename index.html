@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
+    <!-- Подключаем VK Bridge строго через внешний CDN UNPKG -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
 
     <link rel="stylesheet" href="style.css?v=300.0">
@@ -140,17 +141,22 @@
         </div>
     </div>
 
-    <script src="app.js?v=305.0"></script>
+    <!-- Загрузка скрипта логики приложения -->
+    <script src="app.js?v=310.0"></script>
+
+    <!-- Принудительный вызов инициализации и скрытия лоадера -->
     <script>
-        // Безопасный вызов скрытия экрана загрузки VK
-        try {
+        document.addEventListener("DOMContentLoaded", function() {
             if (window.vkBridge) {
-                window.vkBridge.send('VKWebAppInit');
-                window.vkBridge.send('VKWebAppHideLoadingScreen');
+                vkBridge.send("VKWebAppInit")
+                    .then(function() {
+                        return vkBridge.send("VKWebAppHideLoadingScreen");
+                    })
+                    .catch(function(e) {
+                        console.log("VK Bridge Init Note:", e);
+                    });
             }
-        } catch (e) {
-            console.log("VK Bridge bypass mode:", e);
-        }
+        });
     </script>
 </body>
 </html>
