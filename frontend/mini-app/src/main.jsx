@@ -32,13 +32,13 @@ let userAnswers = {
 
 const skillOptions = [
     { label: "Ниже среднего / Требует развития", value: 3 },
-    { label: "Средний уровень / Как у большинства сверстников", value: 6 },
+    { label: "Средний уровень / Как у сверстников", value: 6 },
     { label: "Высокий уровень / Выделяется среди ровесников", value: 8 },
     { label: "Выдающийся результат / Отличная подготовка", value: 10 }
 ];
 
 const baseQuestions = [
-    { title: "ФИО Ребенка", field: "full_name", type: "text", placeholder: "Например: Иванов Иван" },
+    { title: "ФИО (или имя) ребенка", field: "full_name", type: "text", placeholder: "Например: Иванов Иван Иванович" },
     { title: "Дата рождения (ДД.ММ.ГГГГ)", field: "birth_date", type: "date_text", placeholder: "15.05.2016" },
     { title: "Пол ребенка", field: "sex", type: "gender_cards" },
     { title: "Рост ребенка (см)", field: "height_cm", type: "number", isFloat: false, default: 125 },
@@ -57,22 +57,22 @@ const physicalQuestions = [
 ];
 
 const normativesQuestions = [
-    { title: "Подтягивание из виса на высокой перекладине (Сила)", desc: "Хват сверху, подбородок выше перекладины.", avg: "Норма: 1 раз", field: "pullups", subfield: "normatives", type: "number_norm", isFloat: false, unit: "раз", default: 1 },
-    { title: "Наклон вперед на гимнастической скамье (Гибкость)", desc: "Стоя с прямыми ногами с фиксацией 2 сек.", avg: "Норма: 8 см", field: "flexibility_cm", subfield: "normatives", type: "number_norm", isFloat: false, unit: "см", default: 8 },
+    { title: "Подтягивание из виса (Сила)", desc: "Хват сверху, подбородок выше перекладины.", avg: "Норма: 1 раз", field: "pullups", subfield: "normatives", type: "number_norm", isFloat: false, unit: "раз", default: 1 },
+    { title: "Наклон вперед на скамье (Гибкость)", desc: "Стоя с прямыми ногами с фиксацией 2 сек.", avg: "Норма: 8 см", field: "flexibility_cm", subfield: "normatives", type: "number_norm", isFloat: false, unit: "см", default: 8 },
     { title: "Поднимание туловища из положения лежа (Выносливость)", desc: "Руки за головой в замок, за 1 минуту.", avg: "Норма: 29 раз/мин", field: "situps", subfield: "normatives", type: "number_norm", isFloat: false, unit: "раз/мин", default: 29 },
     { title: "Прыжок в длину с места (Скоростно-силовые)", desc: "Толчком двумя ногами от линии.", avg: "Норма: 134 см", field: "long_jump_cm", subfield: "normatives", type: "number_norm", isFloat: false, unit: "см", default: 134 },
     { title: "Челночный бег 3х10 м (Координация)", desc: "Точность до 0,01 с.", avg: "Норма: 9,0 сек", field: "shuttle_run_sec", subfield: "normatives", type: "number_norm", isFloat: true, unit: "сек", default: 9.0 },
     { title: "Бег на 30 м (Скорость)", desc: "С высокого старта по прямой.", avg: "Норма: 6,0 сек", field: "run_30m_sec", subfield: "normatives", type: "number_norm", isFloat: true, unit: "сек", default: 6.0 },
-    { title: "Сгибание и разгибание рук в упоре лежа (Сила)", desc: "Касание грудью пола, фиксация 1 сек.", avg: "Норма: 10 раз", field: "pushups", subfield: "normatives", type: "number_norm", isFloat: false, unit: "раз", default: 10 },
-    { title: "Метание теннисного мяча в цель с 6 м", desc: "5 попыток в мишень 90 см.", avg: "Норма: 3 попаданий", field: "target_throw", subfield: "normatives", type: "number_norm", isFloat: false, unit: "попаданий", default: 3 }
+    { title: "Отжимания от пола (Сила)", desc: "Касание грудью пола, фиксация 1 сек.", avg: "Норма: 10 раз", field: "pushups", subfield: "normatives", type: "number_norm", isFloat: false, unit: "раз", default: 10 },
+    { title: "Метание мяча в цель с 6 м", desc: "5 попыток в мишень 90 см.", avg: "Норма: 3 попаданий", field: "target_throw", subfield: "normatives", type: "number_norm", isFloat: false, unit: "попаданий", default: 3 }
 ];
 
 const finalQuestions = [
     { title: "Темперамент и поведение ребенка", field: "temperament", type: "cards_options", options: [
         { label: "Сангвиник (живой, подвижный, общительный)", value: "sanguine" },
         { label: "Холерик (быстрый, импульсивный, энергичный)", value: "choleric" },
-        { label: "Флегматик (спокойный, хладнокровный, упрямый)", value: "phlegmatic" },
-        { label: "Меланхолик (чуткий, ранимый, сдержанный)", value: "melancholic" }
+        { label: "Флегматик (спокойный, хладнокровный, упорный)", value: "phlegmatic" },
+        { label: "Меланхолик (чуткий, осторожный, сдержанный)", value: "melancholic" }
     ]}
 ];
 
@@ -90,44 +90,26 @@ function showScreen(screenId) {
         if (el) {
             if (id === screenId) {
                 el.classList.remove("hidden");
-                el.style.display = "block";
+                el.style.display = (screenId === "resultsScreen") ? "block" : "flex";
             } else {
                 el.classList.add("hidden");
                 el.style.display = "none";
             }
         }
     });
-    window.scrollTo(0, 0);
-}
 
-function checkApiConnection() {
-    const statusEl = document.getElementById("apiStatus");
-    fetch(`${API_URL}/health`)
-        .then(res => {
-            if (res.ok && statusEl) {
-                statusEl.textContent = "STAS API: Подключено";
-                statusEl.classList.add("connected");
-            }
-        })
-        .catch(() => {
-            if (statusEl) {
-                statusEl.textContent = "STAS API: Подключено";
-                statusEl.classList.add("connected");
-            }
-        });
+    const resultsEl = document.getElementById("resultsScreen");
+    if (resultsEl) {
+        resultsEl.scrollTop = 0;
+    }
 }
 
 function toggleNormsMode() {
     useNormsMode = !useNormsMode;
-    const btn = document.getElementById("modeBtn");
-    if (btn) {
-        if (useNormsMode) {
-            btn.classList.add("active");
-            btn.textContent = "✓ Включен расширенный режим (ввод нормативов ОФП)";
-        } else {
-            btn.classList.remove("active");
-            btn.textContent = "📋 Я знаю свои результаты нормативов по физической подготовке";
-        }
+    const modeCard = document.getElementById("modeCard");
+    if (modeCard) {
+        if (useNormsMode) modeCard.classList.add("active");
+        else modeCard.classList.remove("active");
     }
 }
 
@@ -200,7 +182,7 @@ function renderQuestion() {
     container.innerHTML = `
         <h3 class="question-title">${q.title}</h3>
         <div class="input-wrapper">${inputHtml}</div>
-        <button type="button" id="nextStepBtn" class="btn-primary" style="margin-top:16px;">Далее ➔</button>
+        <button type="button" id="nextStepBtn" class="btn-primary" style="margin-top:14px;">Далее ➔</button>
     `;
 
     document.getElementById("nextStepBtn")?.addEventListener("click", nextStep);
@@ -226,8 +208,6 @@ function renderQuestion() {
             else dInput.value = v;
         });
     }
-
-    window.scrollTo(0, 0);
 }
 
 function saveCurrentAnswer() {
@@ -285,14 +265,20 @@ function resetReactionTestUI() {
     const prompt = document.getElementById("reactionPrompt");
     if (prompt) prompt.textContent = "Нажмите кнопку ниже для старта";
     const btn = document.getElementById("startReactionBtn");
-    if (btn) btn.style.display = "inline-block";
+    if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = "1";
+    }
 }
 
 function startReactionTest() {
     if (reactionTimer) clearTimeout(reactionTimer);
     const box = document.getElementById("reactionBox");
     const btn = document.getElementById("startReactionBtn");
-    if (btn) btn.style.display = "none";
+    if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = "0.4";
+    }
     if (box) box.style.background = "#ff4d4f";
     const prompt = document.getElementById("reactionPrompt");
     if (prompt) prompt.textContent = "Ждите зеленый цвет...";
@@ -317,8 +303,11 @@ function handleReactionClick() {
         clearTimeout(reactionTimer);
         reactionActive = false;
         if (box) box.style.background = "#faad14";
-        if (prompt) prompt.textContent = "Слишком рано! Нажмите кнопку снова.";
-        if (btn) btn.style.display = "inline-block";
+        if (prompt) prompt.textContent = "Слишком рано! Попробуйте снова.";
+        if (btn) {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+        }
         return;
     }
 
@@ -326,12 +315,12 @@ function handleReactionClick() {
     userAnswers.reaction_ms = diff;
     reactionActive = false;
     if (box) box.style.background = "#0077ff";
-    if (prompt) prompt.textContent = `Ваше время реакции: ${diff} мс! Отлично!`;
+    if (prompt) prompt.textContent = `Ваше время: ${diff} мс!`;
 
     setTimeout(() => {
         showScreen("tappingScreen");
         resetTappingTestUI();
-    }, 1200);
+    }, 800);
 }
 
 function resetTappingTestUI() {
@@ -354,14 +343,20 @@ function resetTappingTestUI() {
     const curNum = document.getElementById("currentSquareNum");
     if (curNum) curNum.textContent = "1";
     const btn = document.getElementById("startTapBtn");
-    if (btn) btn.style.display = "inline-block";
+    if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = "1";
+    }
 }
 
 function start6SquareTappingTest() {
     resetTappingTestUI();
     tappingActive = true;
     const btn = document.getElementById("startTapBtn");
-    if (btn) btn.style.display = "none";
+    if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = "0.4";
+    }
 
     tappingTimer = setInterval(() => {
         tappingTimeLeft--;
@@ -389,7 +384,7 @@ function highlightActiveSquare(sqNum) {
     document.getElementById(`sq${sqNum}`)?.classList.add("active");
     const numEl = document.getElementById("currentSquareNum");
     if (numEl) numEl.textContent = sqNum;
-    if (navigator.vibrate) navigator.vibrate(60);
+    if (navigator.vibrate) navigator.vibrate(50);
 }
 
 function registerSquareTap(sqNum) {
@@ -466,13 +461,13 @@ async function fetchServerGigaChatAI() {
 
     updateSkillBars();
 
-    const displayName = userAnswers.full_name.trim() || "Юный спортсмен";
-    if (nameEl) nameEl.textContent = displayName;
+    const fullDisplayName = (userAnswers.full_name || "Юный спортсмен").trim();
+    if (nameEl) nameEl.textContent = fullDisplayName;
     if (subEl) subEl.textContent = `${userAnswers.height_cm} см | ${userAnswers.weight_kg} кг`;
-    if (aiTextEl) aiTextEl.innerHTML = "<p style='color: #0077ff; font-weight: bold;'>Бельчонок СТАС проводит расчёт алгоритма...</p>";
+    if (aiTextEl) aiTextEl.innerHTML = "<p style='color: #0077ff; font-weight: bold;'>Бельчонок СТАС формирует экспертное заключение...</p>";
 
     const payload = {
-        full_name: String(displayName),
+        full_name: String(fullDisplayName),
         age: parseInt(calculateAge(userAnswers.birth_date)),
         sex: String(userAnswers.sex),
         height_cm: parseFloat(userAnswers.height_cm),
@@ -499,23 +494,75 @@ async function fetchServerGigaChatAI() {
         }
         renderDashboard(result);
     } catch (e) {
-        if (aiTextEl) aiTextEl.innerHTML = "<div style='color: red; padding: 10px;'>Ошибка связи с сервером.</div>";
+        if (aiTextEl) aiTextEl.innerHTML = "<div style='color: red; padding: 6px;'>Не удалось загрузить заключение. Проверьте соединение.</div>";
     }
 }
 
-function downloadPDF() {
-    const element = document.getElementById('pdfReportContent');
-    const opt = {
-        margin: 8,
-        filename: `STAS_Report_${userAnswers.full_name || 'Sportsman'}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+async function downloadPDF() {
+    const pdfBtn = document.getElementById('pdfBtn');
+    if (pdfBtn) {
+        pdfBtn.disabled = true;
+        pdfBtn.textContent = "⏳ Создание...";
+    }
+
+    const heightM = userAnswers.height_cm / 100;
+    const bmiVal = parseFloat((userAnswers.weight_kg / (heightM * heightM)).toFixed(1));
+    const targetHeightVal = parseFloat((document.getElementById("resTargetHeightVal")?.textContent || "0").replace(/[^\d.]/g, '')) || 0;
+    const aiTextVal = document.getElementById("resAiText")?.innerText || "";
+
+    const payload = {
+        full_name: (userAnswers.full_name || "Юный спортсмен").trim(),
+        height_cm: parseFloat(userAnswers.height_cm),
+        weight_kg: parseFloat(userAnswers.weight_kg),
+        bmi: bmiVal,
+        target_height: targetHeightVal,
+        reaction_ms: parseInt(userAnswers.reaction_ms),
+        temperament: String(temperamentRu[userAnswers.temperament] || userAnswers.temperament),
+        nerve_type: String(userAnswers.tapping_test.nerve_type),
+        ai_text: aiTextVal,
+        skills: userAnswers.physical,
+        top_sports: window.lastTopSports || []
     };
-    if (window.html2pdf) {
-        window.html2pdf().set(opt).from(element).save();
-    } else {
+
+    try {
+        const response = await fetch(`${API_URL}/api/generate-pdf`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error("Ошибка генерации PDF на сервере");
+
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const fileName = `STAS_Zaklyuchenie_${payload.full_name.replace(/\s+/g, '_')}.pdf`;
+
+        let vkOpened = false;
+        try {
+            if (bridge.supports("VKWebAppOpenURL")) {
+                await bridge.send("VKWebAppOpenURL", { url: blobUrl });
+                vkOpened = true;
+            }
+        } catch (e) {}
+
+        if (!vkOpened) {
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = fileName;
+            a.target = "_blank";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+    } catch (err) {
         window.print();
+    } finally {
+        if (pdfBtn) {
+            pdfBtn.disabled = false;
+            pdfBtn.textContent = "📥 Скачать PDF";
+        }
     }
 }
 
@@ -538,6 +585,8 @@ function updateSkillBars() {
 }
 
 function renderDashboard(data) {
+    window.lastTopSports = data.top_sports || [];
+
     const gridEl = document.getElementById("recommendedGrid");
     const otherGridEl = document.getElementById("otherRecommendedGrid");
     const targetHeightEl = document.getElementById("resTargetHeightVal");
@@ -568,13 +617,11 @@ function renderDashboard(data) {
             card.style.borderLeftColor = strokeColor;
             card.innerHTML = `
                 <div class="card-left">
-                    <div class="circle-chart">
-                        <svg viewBox="0 0 36 36" class="circular-chart">
-                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                            <path class="circle" stroke="${strokeColor}" stroke-dasharray="${item.score}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                            <text x="18" y="20.35" class="percentage">${item.score}%</text>
-                        </svg>
-                    </div>
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <path class="circle" stroke="${strokeColor}" stroke-dasharray="${item.score}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <text x="18" y="18.5" class="percentage">${item.score}%</text>
+                    </svg>
                 </div>
                 <div class="card-right">
                     <h4 class="rec-title">#${index + 1} ${item.sport_name}</h4>
@@ -593,13 +640,11 @@ function renderDashboard(data) {
             card.style.borderLeftColor = "#7c3aed";
             card.innerHTML = `
                 <div class="card-left">
-                    <div class="circle-chart">
-                        <svg viewBox="0 0 36 36" class="circular-chart">
-                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                            <path class="circle" stroke="#7c3aed" stroke-dasharray="${item.score}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                            <text x="18" y="20.35" class="percentage">${item.score}%</text>
-                        </svg>
-                    </div>
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <path class="circle" stroke="#7c3aed" stroke-dasharray="${item.score}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <text x="18" y="18.5" class="percentage">${item.score}%</text>
+                    </svg>
                 </div>
                 <div class="card-right">
                     <h4 class="rec-title">#${index + 1} ${item.sport_name}</h4>
@@ -616,14 +661,15 @@ function setupApp() {
         bridge.send("VKWebAppHideLoadingScreen").catch(() => {});
         bridge.send('VKWebAppGetUserInfo')
             .then(user => {
-                if (user && user.first_name) {
-                    userAnswers.full_name = `${user.last_name || ''} ${user.first_name}`.trim();
+                if (user) {
+                    const fullName = `${user.last_name || ''} ${user.first_name || ''}`.trim();
+                    if (fullName) userAnswers.full_name = fullName;
                 }
             })
             .catch(() => {});
     } catch (e) {}
 
-    document.getElementById("modeBtn")?.addEventListener("click", toggleNormsMode);
+    document.getElementById("modeCard")?.addEventListener("click", toggleNormsMode);
     document.getElementById("startQuizBtn")?.addEventListener("click", startQuiz);
     document.getElementById("prevBtn")?.addEventListener("click", prevStep);
     document.getElementById("startReactionBtn")?.addEventListener("click", startReactionTest);
@@ -633,10 +679,15 @@ function setupApp() {
     document.getElementById("pdfBtn")?.addEventListener("click", downloadPDF);
 
     for (let i = 1; i <= 6; i++) {
-        document.getElementById(`sq${i}`)?.addEventListener("click", () => registerSquareTap(i));
+        const sq = document.getElementById(`sq${i}`);
+        if (sq) {
+            sq.addEventListener("pointerdown", (e) => {
+                e.preventDefault();
+                registerSquareTap(i);
+            });
+        }
     }
 
-    checkApiConnection();
     showScreen("welcomeScreen");
 }
 
