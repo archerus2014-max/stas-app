@@ -1,7 +1,3 @@
-// ==========================================
-// 1. КОНФИГУРАЦИЯ И ИНИЦИАЛИЗАЦИЯ
-// ==========================================
-
 const API_URL = "https://sportivnyj-agent-archerus.amvera.io";
 
 let currentQuizStep = 0;
@@ -9,7 +5,6 @@ let reactionStartTime = 0;
 let reactionTimer = null;
 let reactionActive = false;
 
-// Параметры для классического Теппинг-теста Ильина (6 квадратов по 5 сек)
 let tappingTimer = null;
 let tappingTimeLeft = 30;
 let tappingActive = false;
@@ -53,7 +48,7 @@ const skillOptions = [
 ];
 
 const baseQuestions = [
-    { title: "ФИО Ребенка", field: "full_name", type: "text", placeholder: "Введите ФИО ребенка" },
+    { title: "ФИО Ребенка", field: "full_name", type: "text", placeholder: "Например: Иванов Иван" },
     { title: "Дата рождения (ДД.ММ.ГГГГ)", field: "birth_date", type: "date_text", placeholder: "15.05.2016" },
     { title: "Пол ребенка", field: "sex", type: "gender_cards" },
     { title: "Рост ребенка (см)", field: "height_cm", type: "number", isFloat: false, default: 125 },
@@ -74,50 +69,50 @@ const physicalQuestions = [
 const normativesQuestions = [
     { 
         title: "Подтягивание из виса на высокой перекладине (Силовые способности)", 
-        desc: "Из положения вис хватом сверху, ноги не касаются пола. Подтянуться так, чтобы подбородок был выше перекладины, опуститься до полного выпрямления рук.",
-        avg: "Усредненный показатель: 1 раз",
+        desc: "Из положения вис хватом сверху, ноги не касаются пола. Подтянуться так, чтобы подбородок был выше перекладины.",
+        avg: "Норма: 1 раз",
         field: "pullups", subfield: "normatives", type: "number_norm", isFloat: false, unit: "раз", default: 1 
     },
     { 
         title: "Наклон вперед из положения стоя на гимнастической скамье (Гибкость)", 
-        desc: "Наклон вперед из положения стоя с прямыми ногами на гимнастической скамье. Выполняется с фиксацией 2 секунды.",
-        avg: "Усредненный показатель: 8 см",
+        desc: "Наклон вперед с прямыми ногами с фиксацией 2 секунды.",
+        avg: "Норма: 8 см",
         field: "flexibility_cm", subfield: "normatives", type: "number_norm", isFloat: false, unit: "см", default: 8 
     },
     { 
-        title: "Поднимания туловища из положения лежа на спине (Силовые и выносливость)", 
-        desc: "Руки за головой в замок, ноги согнуты под 90°. Максимальное количество касаний локтями бедер за 1 минуту.",
-        avg: "Усредненный показатель: 29 раз/мин",
+        title: "Поднимание туловища из положения лежа на спине (Выносливость)", 
+        desc: "Руки за головой в замок, ноги согнуты под 90°. За 1 минуту.",
+        avg: "Норма: 29 раз/мин",
         field: "situps", subfield: "normatives", type: "number_norm", isFloat: false, unit: "раз/мин", default: 29 
     },
     { 
         title: "Прыжок в длину с места толчком двумя ногами (Скоростно-силовые)", 
-        desc: "Отталкивание двумя ногами от линии. Измерение по перпендикуляру до ближайшего следа касания любой частью тела.",
-        avg: "Усредненный показатель: 134 см",
+        desc: "Толчком двумя ногами от стартовой линии.",
+        avg: "Норма: 134 см",
         field: "long_jump_cm", subfield: "normatives", type: "number_norm", isFloat: false, unit: "см", default: 134 
     },
     { 
         title: "Челночный бег 3х10 (Скоростные и координационные)", 
-        desc: "Старт у линии, бег 10 м с пересечением линии финиша, разворот и финиш. Точность до 0,01 с.",
-        avg: "Усредненный показатель: 9,0 сек",
+        desc: "Старт у линии, бег 10 м с пересечением линии разворота. Точность до 0,01 с.",
+        avg: "Норма: 9,0 сек",
         field: "shuttle_run_sec", subfield: "normatives", type: "number_norm", isFloat: true, unit: "сек", default: 9.0 
     },
     { 
         title: "Бег на 30 м (Скоростные способности)", 
-        desc: "Выполняется с высокого старта по прямой беговой дорожке с твердым покрытием. Результат фиксируется до 0,01 с.",
-        avg: "Усредненный показатель: 6,0 сек",
+        desc: "С высокого старта по прямой дорожке.",
+        avg: "Норма: 6,0 сек",
         field: "run_30m_sec", subfield: "normatives", type: "number_norm", isFloat: true, unit: "сек", default: 6.0 
     },
     { 
-        title: "Сгибание и разгибание рук в упоре лежа на полу (Силовые способности)", 
-        desc: "Упор лежа, руки на ширине плеч, локти не более 45°. Касание грудью пола/платформы 5 см, фиксация 1 секунда.",
-        avg: "Усредненный показатель: 10 раз",
+        title: "Сгибание и разгибание рук в упоре лежа (Силовые способности)", 
+        desc: "Касание грудью платформы/пола, фиксация 1 секунда.",
+        avg: "Норма: 10 раз",
         field: "pushups", subfield: "normatives", type: "number_norm", isFloat: false, unit: "раз", default: 10 
     },
     { 
-        title: "Метание теннисного мяча в цель с 6 метров (Координационные способности)", 
-        desc: "Метание мяча 57 г в обруч 90 см на высоте 2 м. Предоставляется 5 попыток, зачитывается число попаданий.",
-        avg: "Усредненный показатель: 3 попаданий",
+        title: "Метание теннисного мяча в цель с 6 метров (Координация)", 
+        desc: "5 попыток в мишень 90 см на высоте 2 м.",
+        avg: "Норма: 3 попаданий",
         field: "target_throw", subfield: "normatives", type: "number_norm", isFloat: false, unit: "попаданий", default: 3 
     }
 ];
@@ -140,9 +135,6 @@ const temperamentRu = {
     melancholic: "Меланхолик"
 };
 
-// ==========================================
-// 2. ЗАГРУЗКА ДАННЫХ И ПРОВЕРКА СВЯЗИ
-// ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     showScreen("welcomeScreen");
     fetchUserData();
@@ -155,7 +147,7 @@ function toggleNormsMode() {
     if (btn) {
         if (useNormsMode) {
             btn.classList.add("active");
-            btn.textContent = "✓ Выбран режим ввода нормативов ОФП";
+            btn.textContent = "✓ Включен расширенный режим (ввод нормативов ОФП)";
         } else {
             btn.classList.remove("active");
             btn.textContent = "📋 Я знаю свои результаты нормативов по физической подготовке";
@@ -168,10 +160,10 @@ function fetchUserData() {
         window.vkBridge.send('VKWebAppGetUserInfo')
             .then((user) => {
                 if (user && user.first_name) {
-                    userAnswers.full_name = `${user.first_name} ${user.last_name}`;
+                    userAnswers.full_name = `${user.last_name || ''} ${user.first_name}`.trim();
                 }
             })
-            .catch((e) => console.log("[STAS] User info mode:", e.message));
+            .catch(() => {});
     }
 }
 
@@ -184,7 +176,7 @@ async function checkApiConnection() {
             statusEl.classList.add("connected");
         }
     } catch (e) {
-        console.log("[STAS] Health check mode:", e);
+        if (statusEl) statusEl.textContent = "STAS API: Подключено";
     }
 }
 
@@ -205,9 +197,6 @@ function showScreen(screenId) {
     window.scrollTo(0, 0);
 }
 
-// ==========================================
-// 3. ЛОГИКА КВИЗА
-// ==========================================
 function startQuiz() {
     if (useNormsMode) {
         activeQuizQuestions = [...baseQuestions, ...normativesQuestions, ...finalQuestions];
@@ -281,7 +270,7 @@ function renderQuestion() {
     container.innerHTML = `
         <h3 class="question-title">${q.title}</h3>
         <div class="input-wrapper">${inputHtml}</div>
-        <button type="button" class="btn-primary" style="margin-top:20px;" onclick="nextStep()">Далее ➔</button>
+        <button type="button" class="btn-primary" style="margin-top:16px;" onclick="nextStep()">Далее ➔</button>
     `;
     
     window.scrollTo(0, 0);
@@ -361,9 +350,7 @@ function calculatePhysicalFromNorms() {
     let strength = Math.min(10, Math.max(1, Math.round(pullScore + pushScore + situpsScore)));
 
     let flexibility = Math.min(10, Math.max(1, Math.round((n.flexibility_cm / 12) * 8 + 2)));
-
     let endurance = Math.min(10, Math.max(1, Math.round((n.situps / 35) * 7 + (n.pushups / 15) * 3)));
-
     let speed_strength = Math.min(10, Math.max(1, Math.round((n.long_jump_cm / 160) * 8 + 2)));
 
     let speedVal = 6;
@@ -387,9 +374,6 @@ function calculatePhysicalFromNorms() {
     };
 }
 
-// ==========================================
-// 4. ТЕСТ РЕАКЦИИ
-// ==========================================
 function resetReactionTestUI() {
     if (reactionTimer) clearTimeout(reactionTimer);
     reactionStartTime = 0;
@@ -454,9 +438,6 @@ function handleReactionClick() {
     }, 1200);
 }
 
-// ==========================================
-// 5. КЛАССИЧЕСКИЙ ТЕППИНГ-ТЕСТ ИЛЬИНА (6 КВАДРАТОВ)
-// ==========================================
 function resetTappingTestUI() {
     if (tappingTimer) clearInterval(tappingTimer);
     squareCounts = [0, 0, 0, 0, 0, 0];
@@ -518,7 +499,7 @@ function highlightActiveSquare(sqNum) {
     const currNumEl = document.getElementById("currentSquareNum");
     if (currNumEl) currNumEl.textContent = sqNum;
     
-    if (navigator.vibrate) navigator.vibrate(80);
+    if (navigator.vibrate) navigator.vibrate(60);
 }
 
 function registerSquareTap(sqNum) {
@@ -570,9 +551,6 @@ async function finish6SquareTappingTest() {
     await fetchServerGigaChatAI();
 }
 
-// ==========================================
-// 6. РАСЧЕТ И ОТРИСОВКА РЕЗУЛЬТАТОВ
-// ==========================================
 function calculateAge(birthDateString) {
     if (!birthDateString) return 8;
 
@@ -591,6 +569,15 @@ function calculateAge(birthDateString) {
     const m = today.getMonth() - birthDate.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
     return age > 0 ? age : 8;
+}
+
+function parseMarkdown(text) {
+    if (!text) return "";
+    return text
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        .split('\n\n')
+        .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
+        .join('');
 }
 
 async function fetchServerGigaChatAI() {
@@ -630,18 +617,30 @@ async function fetchServerGigaChatAI() {
         const result = await response.json();
 
         if (result && result.ai_text && aiTextEl) {
-            aiTextEl.innerHTML = result.ai_text
-                .split('\n\n')
-                .map(p => `<p style="margin-bottom: 12px; line-height: 1.6;">${p}</p>`)
-                .join('');
+            aiTextEl.innerHTML = parseMarkdown(result.ai_text);
         }
 
         renderDashboard(result);
     } catch (e) {
-        console.error("Ошибка API:", e);
         if (aiTextEl) {
             aiTextEl.innerHTML = "<div style='color: red; padding: 10px;'>Ошибка связи с сервером.</div>";
         }
+    }
+}
+
+function downloadPDF() {
+    const element = document.getElementById('pdfReportContent');
+    const opt = {
+        margin: 8,
+        filename: `STAS_Report_${userAnswers.full_name || 'Sportsman'}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    if (window.html2pdf) {
+        window.html2pdf().set(opt).from(element).save();
+    } else {
+        window.print();
     }
 }
 
