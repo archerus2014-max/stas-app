@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- Библиотека для генерации PDF -->
+    <!-- Библиотека генерации PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
@@ -49,7 +49,7 @@
         .select-card { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 500; cursor: pointer; text-align: center; }
         .select-card.active { border-color: #0077ff; background: #e6f0ff; color: #0077ff; font-weight: bold; }
 
-        /* Компактный Теппинг-тест */
+        /* Компактный Теппинг-тест без вертикального скролла */
         .tapping-header { text-align: center; margin-bottom: 8px; }
         .tapping-header h2 { font-size: 17px; }
         .subtitle-text { font-size: 12px; color: #64748b; margin-top: 2px; }
@@ -65,7 +65,7 @@
         .tap-square.active { background: #dcfce7; border-color: #10b981; color: #15803d; box-shadow: 0 0 10px rgba(16, 185, 129, 0.35); transform: scale(1.02); }
         .tap-square b { font-size: 18px; color: #0f172a; margin-top: 1px; }
 
-        .reaction-target-box { width: 100%; height: 150px; background: #0077ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 16px; }
+        .reaction-target-box { width: 100%; height: 150px; background: #0077ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 16px; text-align: center; padding: 12px; }
 
         /* Результаты и заключение */
         .dashboard-header-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px; border-radius: 12px; margin-bottom: 12px; gap: 8px; }
@@ -254,7 +254,6 @@
         </div>
     </div>
 
-    <!-- Модуль приложения -->
     <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

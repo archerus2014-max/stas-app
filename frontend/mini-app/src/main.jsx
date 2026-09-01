@@ -84,7 +84,8 @@ const temperamentRu = {
 };
 
 function showScreen(screenId) {
-    ["welcomeScreen", "quizScreen", "reactionScreen", "tappingScreen", "resultsScreen"].forEach(id => {
+    const screens = ["welcomeScreen", "quizScreen", "reactionScreen", "tappingScreen", "resultsScreen"];
+    screens.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             if (id === screenId) {
@@ -102,9 +103,8 @@ function showScreen(screenId) {
 function checkApiConnection() {
     const statusEl = document.getElementById("apiStatus");
     fetch(`${API_URL}/health`)
-        .then(res => res.json())
-        .then(() => {
-            if (statusEl) {
+        .then(res => {
+            if (res.ok && statusEl) {
                 statusEl.textContent = "STAS API: Подключено";
                 statusEl.classList.add("connected");
             }
@@ -450,7 +450,6 @@ function calculateAge(birthDateString) {
     return age > 0 ? age : 8;
 }
 
-// Форматирование Markdown в HTML
 function parseMarkdown(text) {
     if (!text) return "";
     return text

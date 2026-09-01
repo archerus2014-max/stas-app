@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
 
-    <!-- Подключение VK Bridge CDN -->
+    <!-- VK Bridge & html2pdf -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser/vk-bridge.js"></script>
-    <!-- Библиотека для генерации PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <script>
@@ -15,10 +14,8 @@
             function initVK() {
                 if (window.vkBridge && typeof window.vkBridge.send === 'function') {
                     window.vkBridge.send("VKWebAppInit")
-                        .then(function(data) {
-                            return window.vkBridge.send("VKWebAppHideLoadingScreen");
-                        })
-                        .catch(function() {});
+                        .then(() => window.vkBridge.send("VKWebAppHideLoadingScreen"))
+                        .catch(() => {});
                 }
             }
             initVK();
@@ -29,10 +26,10 @@
         })();
     </script>
 
-    <link rel="stylesheet" href="style.css?v=800.0">
+    <link rel="stylesheet" href="style.css?v=803.0">
 </head>
 <body>
-    <div class="app-container">
+    <div class="app-container" id="appRoot">
         <!-- Шапка -->
         <header class="main-header">
             <div class="header-content">
@@ -51,36 +48,41 @@
                 <img src="stas.png" alt="Бельчонок Стас" class="mascot-img-large">
                 <div class="welcome-text">
                     <h2>Привет! Я СТАС — твой спортивный агент</h2>
-                    <p>Пройди комплексное тестирование (антропометрия, психотип, сенсомоторная реакция и <b>классический Теппинг-тест Е.П. Ильина по 6 квадратам</b>). Наш сервис сформирует точный расчёт совместимости с секциями Лангепаса!</p>
+                    <p>Пройди комплексное тестирование (антропометрия, психотип, сенсомоторная реакция и классический Теппинг-тест). Наш сервис сформирует точный расчёт совместимости с секциями!</p>
                 </div>
             </div>
 
-            <div class="mode-selection-box">
-                <button type="button" id="modeBtn" class="btn-mode-toggle" onclick="toggleNormsMode()">
-                    📋 Я знаю свои результаты нормативов по физической подготовке
-                </button>
+            <!-- Переключатель с галочкой -->
+            <div class="mode-checkbox-card" onclick="toggleNormsMode()">
+                <div class="custom-checkbox" id="modeCheckbox">
+                    <span class="checkmark">✓</span>
+                </div>
+                <div class="checkbox-text">
+                    <b>Выбрать расширенный режим</b>
+                    <span>Я знаю свои результаты нормативов по физической подготовке (ОФП)</span>
+                </div>
             </div>
 
             <button type="button" class="btn-primary" onclick="startQuiz()">Начать тестирование ➔</button>
         </div>
 
-        <!-- ЭКРАН 2: Пошаговый Квиз -->
+        <!-- ЭКРАН 2: Квиз -->
         <div id="quizScreen" class="card-screen hidden">
             <div class="progress-bar-container">
                 <div class="step-label" id="stepIndicator">Шаг 1 из 14</div>
                 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
             </div>
             <div id="questionContainer" class="question-container"></div>
-            <div class="quiz-nav-btns">
+            <div class="quiz-nav-btns" style="margin-top: 12px;">
                 <button type="button" id="prevBtn" class="btn-secondary" onclick="prevStep()" style="display:none;">⬅ Назад</button>
             </div>
         </div>
 
-        <!-- ЭКРАН 3: Тест на реакцию -->
+        <!-- ЭКРАН 3: Реакция -->
         <div id="reactionScreen" class="card-screen hidden">
-            <div class="tapping-header">
+            <div class="compact-header">
                 <h2>⚡ Тест на сенсомоторную реакцию</h2>
-                <p class="subtitle-text">Нажмите "НАЧАТЬ ТЕСТ", дождитесь, пока круг станет <b>ЗЕЛЕНЫМ</b>, и кликните по нему!</p>
+                <p class="subtitle-text">Дождитесь, пока экран загорится <b>ЗЕЛЁНЫМ</b>, и быстро нажмите!</p>
             </div>
             <div id="reactionBox" class="reaction-target-box" onclick="handleReactionClick()">
                 <span id="reactionPrompt">Нажмите кнопку ниже для старта</span>
@@ -88,23 +90,16 @@
             <button type="button" id="startReactionBtn" class="btn-primary" onclick="startReactionTest()">🚀 НАЧАТЬ ТЕСТ РЕАКЦИИ</button>
         </div>
 
-        <!-- ЭКРАН 4: Классический Теппинг-тест Е.П. Ильина (6 квадратов) -->
+        <!-- ЭКРАН 4: Компактный Теппинг-тест -->
         <div id="tappingScreen" class="card-screen hidden">
-            <div class="tapping-header">
-                <h2>⏱️ Экспресс-диагностика НС (Тест Ильина)</h2>
-                <p class="subtitle-text">Определение силы нервной системы и динамики работоспособности</p>
-            </div>
-
-            <div class="test-instruction-box">
-                <ul>
-                    <li>Кликайте по подсвеченному <b>ЗЕЛЁНОМУ</b> квадрату с максимальной частотой.</li>
-                    <li>Каждые <b>5 секунд</b> активный квадрат переключается по часовой стрелке. Всего: <b>30 сек</b>.</li>
-                </ul>
+            <div class="compact-header">
+                <h2>⏱️ Тест Ильина (6 квадратов)</h2>
+                <p class="subtitle-text">Кликайте с максимальной частотой по <b>ЗЕЛЁНОМУ</b> квадрату (смена каждые 5 сек)</p>
             </div>
 
             <div class="tapping-timer-box">
                 <div class="timer-value" id="tapTimer">30</div>
-                <div class="timer-label">секунд (активен квадрат <span id="currentSquareNum">1</span> из 6)</div>
+                <div class="timer-label">секунд осталось (активен квадрат <span id="currentSquareNum">1</span>/6)</div>
             </div>
 
             <div class="tapping-grid-container" id="tappingGrid">
@@ -116,11 +111,11 @@
                 <div class="tap-square" id="sq4" onclick="registerSquareTap(4)"><span>4</span><b id="sqCount4">0</b></div>
             </div>
 
-            <button type="button" id="startTapBtn" class="btn-primary" onclick="start6SquareTappingTest()">🚀 ПОНЯТНО, НАЧАТЬ ТЕСТ ИЛЬИНА</button>
+            <button type="button" id="startTapBtn" class="btn-primary" onclick="start6SquareTappingTest()">🚀 НАЧАТЬ ТЕППИНГ-ТЕСТ</button>
         </div>
 
         <!-- ЭКРАН 5: Результаты -->
-        <div id="resultsScreen" class="hidden">
+        <div id="resultsScreen" class="card-screen hidden">
             <div id="pdfReportContent">
                 <div class="dashboard-header-card">
                     <div class="child-profile-info">
@@ -130,9 +125,9 @@
                             <p id="resChildAgeSex" class="child-sub">-- см | -- кг</p>
                         </div>
                     </div>
-                    <div class="action-buttons-group">
-                        <button type="button" class="btn-outline" style="background:#0077ff; color:#fff; border:none;" onclick="downloadPDF()">📥 PDF-отчет</button>
-                        <button type="button" class="btn-outline" onclick="restartQuiz()">Пройти еще раз 🔄</button>
+                    <div class="action-buttons-group no-pdf">
+                        <button type="button" class="btn-action-pdf" onclick="downloadPDF()">📥 PDF-отчет</button>
+                        <button type="button" class="btn-action-reload" onclick="restartQuiz()">🔄 Заново</button>
                     </div>
                 </div>
 
@@ -141,49 +136,51 @@
                         <span class="ai-sparkle">🤖</span>
                         <h3>Экспертное заключение Бельчонка СТАСА</h3>
                     </div>
-                    <div id="resAiText" class="gigachat-body">Формирование вывода...</div>
+                    <div id="resAiText" class="gigachat-body">
+                        <p style="color: #0077ff;">Бельчонок СТАС формирует отчёт...</p>
+                    </div>
                 </div>
 
                 <div class="dashboard-grid-2col">
                     <div class="dash-box">
                         <h3 class="box-title">📊 Физические навыки</h3>
-                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Скорость</span><b id="barSpeedVal">0%</b></div><div class="bar-track"><div id="barSpeedFill" class="bar-fill" style="width: 0%;"></div></div></div>
-                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Сила</span><b id="barStrengthVal">0%</b></div><div class="bar-track"><div id="barStrengthFill" class="bar-fill" style="width: 0%;"></div></div></div>
-                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Координация</span><b id="barCoordVal">0%</b></div><div class="bar-track"><div id="barCoordFill" class="bar-fill" style="width: 0%;"></div></div></div>
-                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Скоростно-силовые</span><b id="barSpeedStrengthVal">0%</b></div><div class="bar-track"><div id="barSpeedStrengthFill" class="bar-fill" style="width: 0%;"></div></div></div>
-                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Гибкость</span><b id="barFlexVal">0%</b></div><div class="bar-track"><div id="barFlexFill" class="bar-fill bar-fill-green" style="width: 0%;"></div></div></div>
-                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Выносливость</span><b id="barEnduranceVal">0%</b></div><div class="bar-track"><div id="barEnduranceFill" class="bar-fill" style="width: 0%;"></div></div></div>
+                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Скорость</span><b id="barSpeedVal">0%</b></div><div class="bar-track"><div id="barSpeedFill" class="bar-fill"></div></div></div>
+                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Сила</span><b id="barStrengthVal">0%</b></div><div class="bar-track"><div id="barStrengthFill" class="bar-fill"></div></div></div>
+                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Координация</span><b id="barCoordVal">0%</b></div><div class="bar-track"><div id="barCoordFill" class="bar-fill"></div></div></div>
+                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Скоростно-силовые</span><b id="barSpeedStrengthVal">0%</b></div><div class="bar-track"><div id="barSpeedStrengthFill" class="bar-fill"></div></div></div>
+                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Гибкость</span><b id="barFlexVal">0%</b></div><div class="bar-track"><div id="barFlexFill" class="bar-fill bar-fill-green"></div></div></div>
+                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Выносливость</span><b id="barEnduranceVal">0%</b></div><div class="bar-track"><div id="barEnduranceFill" class="bar-fill"></div></div></div>
                     </div>
 
                     <div class="dash-box">
                         <h3 class="box-title">📏 Диагностическая карта</h3>
-                        <div class="info-row"><span class="info-label">Рост:</span><b id="resHeightVal" class="info-val">-- см</b></div>
-                        <div class="info-row"><span class="info-label">Прогноз роста:</span><b id="resTargetHeightVal" class="info-val">-- см</b></div>
-                        <div class="info-row"><span class="info-label">Вес:</span><b id="resWeightVal" class="info-val">-- кг</b></div>
-                        <div class="info-row"><span class="info-label">ИМТ:</span><b id="resBmiVal" class="info-val">-- кг/м²</b></div>
-                        <div class="info-row"><span class="info-label">Время реакции:</span><b id="resReactionVal" class="info-val">--</b></div>
-                        <div class="info-row"><span class="info-label">Темперамент:</span><b id="resTemperamentVal" class="info-val">--</b></div>
-                        <div class="info-row"><span class="info-label">Теппинг-тест:</span><b id="resTappingVal" class="info-val">--</b></div>
+                        <div class="info-row"><span>Рост:</span><b id="resHeightVal">-- см</b></div>
+                        <div class="info-row"><span>Прогноз роста:</span><b id="resTargetHeightVal">-- см</b></div>
+                        <div class="info-row"><span>Вес:</span><b id="resWeightVal">-- кг</b></div>
+                        <div class="info-row"><span>ИМТ:</span><b id="resBmiVal">--</b></div>
+                        <div class="info-row"><span>Реакция:</span><b id="resReactionVal">--</b></div>
+                        <div class="info-row"><span>Темперамент:</span><b id="resTemperamentVal">--</b></div>
+                        <div class="info-row"><span>Теппинг-тест:</span><b id="resTappingVal" style="font-size:11px; text-align:right;">--</b></div>
                     </div>
                 </div>
 
                 <div class="dashboard-recommendations-section">
-                    <h2 class="section-title" style="font-size:15px; margin-bottom:10px;">📐 Математический расчёт совместимости с секциями Лангепаса</h2>
+                    <h3 class="section-title">📐 Совместимость с секциями Лангепаса</h3>
                     <div id="recommendedGrid" class="cards-grid"></div>
                 </div>
 
-                <div class="dashboard-recommendations-section" style="margin-top: 18px;">
-                    <h2 class="section-title" style="font-size:15px; margin-bottom:10px; color: #7c3aed;">🌐 Другие перспективные виды спорта (Реестр РФ)</h2>
+                <div class="dashboard-recommendations-section" style="margin-top: 14px;">
+                    <h3 class="section-title" style="color: #7c3aed;">🌐 Другие перспективные виды спорта (РФ)</h3>
                     <div id="otherRecommendedGrid" class="cards-grid"></div>
                 </div>
 
                 <div class="disclaimer-note">
-                    <b>* Примечание:</b> Результаты данного тестирования носят исключительно рекомендательный характер, сформированы на основе вероятностных математических моделей и не являются официальным медицинским или педагогическим заключением.
+                    <b>* Примечание:</b> Результаты носят исключительно рекомендательный характер, сформированы вероятностными математическими моделями и не являются официальным медицинским или педагогическим заключением.
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="app.js?v=800.0"></script>
+    <script src="app.js?v=803.0"></script>
 </body>
 </html>

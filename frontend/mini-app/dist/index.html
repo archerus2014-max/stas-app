@@ -4,88 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС — СШОР «Академия спорта»</title>
+
+    <!-- Библиотека генерации PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; touch-action: manipulation; }
         html, body { position: relative !important; width: 100%; height: 100%; overflow-x: hidden; background-color: #f1f5f9; color: #1e293b; }
-        body { display: flex; justify-content: center; padding: 12px; }
-        .app-container { width: 100%; max-width: 600px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); padding: 20px; min-height: 90vh; }
+        body { display: flex; justify-content: center; padding: 10px; }
+        .app-container { width: 100%; max-width: 600px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); padding: 18px; min-height: 90vh; }
         .hidden { display: none !important; }
         .card-screen.hidden, #resultsScreen.hidden { display: none !important; }
         .card-screen:not(.hidden) { display: block !important; }
-        .main-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px; }
-        .header-content { display: flex; align-items: center; gap: 12px; }
-        .logo-img { width: 45px; height: 45px; object-fit: contain; }
-        .header-titles h1 { font-size: 18px; font-weight: 700; color: #0f172a; }
+        .main-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 16px; }
+        .header-content { display: flex; align-items: center; gap: 10px; }
+        .logo-img { width: 42px; height: 42px; object-fit: contain; }
+        .header-titles h1 { font-size: 17px; font-weight: 700; color: #0f172a; }
         .subtitle { font-size: 12px; color: #64748b; }
         .api-badge { font-size: 11px; background: #e2e8f0; color: #475569; padding: 4px 8px; border-radius: 12px; font-weight: 600; }
         .api-badge.connected { background: #dcfce7; color: #15803d; }
-        .mascot-box { text-align: center; margin-bottom: 20px; }
-        .mascot-img-large { width: 140px; height: 140px; object-fit: contain; margin-bottom: 15px; }
-        .welcome-text h2 { font-size: 20px; margin-bottom: 10px; color: #0f172a; }
-        .welcome-text p { font-size: 14px; line-height: 1.5; color: #475569; }
-        .mode-selection-box { margin-bottom: 20px; }
-        .btn-mode-toggle { width: 100%; background: #f8fafc; border: 2px dashed #0077ff; color: #0077ff; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; }
+        .mascot-box { text-align: center; margin-bottom: 16px; }
+        .mascot-img-large { width: 130px; height: 130px; object-fit: contain; margin-bottom: 10px; }
+        .welcome-text h2 { font-size: 19px; margin-bottom: 8px; color: #0f172a; }
+        .welcome-text p { font-size: 13.5px; line-height: 1.45; color: #475569; }
+        .mode-selection-box { margin-bottom: 16px; }
+        .btn-mode-toggle { width: 100%; background: #f8fafc; border: 2px dashed #0077ff; color: #0077ff; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.2s; }
         .btn-mode-toggle.active { background: #0077ff; color: #ffffff; border-style: solid; }
-        .btn-primary { width: 100%; background: #0077ff; color: #ffffff; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .btn-primary { width: 100%; background: #0077ff; color: #ffffff; border: none; padding: 13px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
         .btn-primary:hover { background: #0056cc; }
-        .btn-secondary { background: #e2e8f0; color: #334155; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
-        .btn-outline { background: transparent; border: 2px solid #0077ff; color: #0077ff; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
-        .progress-bar-container { margin-bottom: 20px; }
-        .step-label { font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 6px; }
-        .progress-track { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .btn-secondary { background: #e2e8f0; color: #334155; border: none; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .btn-outline { background: transparent; border: 2px solid #0077ff; color: #0077ff; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .progress-bar-container { margin-bottom: 16px; }
+        .step-label { font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 5px; }
+        .progress-track { width: 100%; height: 7px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
         .progress-fill { height: 100%; background: #0077ff; width: 0%; transition: width 0.3s ease; }
-        .question-title { font-size: 18px; margin-bottom: 15px; color: #0f172a; }
-        .quiz-input { width: 100%; padding: 12px 16px; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 16px !important; outline: none; }
-        .normative-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
-        .normative-desc { font-size: 13px; color: #475569; margin-bottom: 10px; }
-        .normative-avg { font-size: 12px; font-weight: 600; color: #0077ff; margin-bottom: 12px; }
+        .question-title { font-size: 17px; margin-bottom: 12px; color: #0f172a; }
+        .quiz-input { width: 100%; padding: 11px 14px; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 15px !important; outline: none; }
+        .normative-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; }
+        .normative-desc { font-size: 12.5px; color: #475569; margin-bottom: 8px; }
+        .normative-avg { font-size: 12px; font-weight: 600; color: #0077ff; margin-bottom: 10px; }
         .normative-input-box { display: flex; align-items: center; gap: 10px; }
-        .normative-unit { font-size: 14px; font-weight: 600; color: #64748b; }
-        .cards-select-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-        .select-card { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 500; cursor: pointer; text-align: center; }
+        .normative-unit { font-size: 13.5px; font-weight: 600; color: #64748b; }
+        .cards-select-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .select-card { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 500; cursor: pointer; text-align: center; }
         .select-card.active { border-color: #0077ff; background: #e6f0ff; color: #0077ff; font-weight: bold; }
-        .tapping-header { text-align: center; margin-bottom: 15px; }
-        .subtitle-text { font-size: 13px; color: #64748b; margin-top: 4px; }
-        .test-instruction-box { background: #f0f7ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
-        .test-instruction-box h3 { font-size: 15px; color: #0369a1; margin-bottom: 8px; }
+
+        /* Компактный Теппинг-тест без вертикального скролла */
+        .tapping-header { text-align: center; margin-bottom: 8px; }
+        .tapping-header h2 { font-size: 17px; }
+        .subtitle-text { font-size: 12px; color: #64748b; margin-top: 2px; }
+        .test-instruction-box { background: #f0f7ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; }
         .test-instruction-box ul { list-style: none; padding: 0; }
-        .test-instruction-box li { font-size: 13px; color: #334155; margin-bottom: 6px; position: relative; padding-left: 18px; }
-        .test-instruction-box li::before { content: "•"; color: #0077ff; font-weight: bold; font-size: 16px; position: absolute; left: 0; }
-        .reaction-target-box { width: 100%; height: 180px; background: #0077ff; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 18px; cursor: pointer; margin-bottom: 20px; }
-        .tapping-timer-box { text-align: center; margin-bottom: 15px; }
-        .timer-value { font-size: 32px; font-weight: 800; color: #0077ff; }
-        .timer-label { font-size: 13px; color: #64748b; }
-        .tapping-grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 420px; margin: 0 auto 20px auto; }
-        .tap-square { background: #f1f5f9; border: 3px solid #cbd5e1; border-radius: 12px; height: 85px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; color: #64748b; user-select: none; }
-        .tap-square.active { background: #dcfce7; border-color: #10b981; color: #15803d; box-shadow: 0 0 12px rgba(16, 185, 129, 0.35); transform: scale(1.03); }
-        .tap-square b { font-size: 22px; color: #0f172a; margin-top: 2px; }
-        .dashboard-header-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        .child-profile-info { display: flex; align-items: center; gap: 12px; }
-        .mascot-img-small { width: 45px; height: 45px; object-fit: contain; }
-        .gigachat-card { background: #f0f7ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
-        .gigachat-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: #0369a1; }
-        .dashboard-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .test-instruction-box li { font-size: 11.5px; color: #334155; margin-bottom: 2px; position: relative; padding-left: 14px; }
+        .test-instruction-box li::before { content: "•"; color: #0077ff; font-weight: bold; position: absolute; left: 0; }
+        .tapping-timer-box { text-align: center; margin-bottom: 8px; }
+        .timer-value { font-size: 26px; font-weight: 800; color: #0077ff; line-height: 1; }
+        .timer-label { font-size: 12px; color: #64748b; }
+        .tapping-grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 360px; margin: 0 auto 12px auto; }
+        .tap-square { background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 10px; height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; color: #64748b; user-select: none; }
+        .tap-square.active { background: #dcfce7; border-color: #10b981; color: #15803d; box-shadow: 0 0 10px rgba(16, 185, 129, 0.35); transform: scale(1.02); }
+        .tap-square b { font-size: 18px; color: #0f172a; margin-top: 1px; }
+
+        .reaction-target-box { width: 100%; height: 150px; background: #0077ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 16px; text-align: center; padding: 12px; }
+
+        /* Результаты и заключение */
+        .dashboard-header-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px; border-radius: 12px; margin-bottom: 12px; gap: 8px; }
+        .child-profile-info { display: flex; align-items: center; gap: 10px; }
+        .mascot-img-small { width: 40px; height: 40px; object-fit: contain; }
+        .action-buttons-group { display: flex; gap: 6px; flex-wrap: wrap; }
+        
+        .gigachat-card { background: #f0f7ff; border: 1.5px solid #bae6fd; border-radius: 12px; padding: 16px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,119,255,0.06); }
+        .gigachat-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: #0369a1; font-size: 15px; }
+        .gigachat-body { font-size: 13.5px; line-height: 1.6; color: #1e293b; word-break: break-word; }
+        .gigachat-body p { margin-bottom: 10px; }
+        .gigachat-body p:last-child { margin-bottom: 0; }
+
+        .dashboard-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
         @media (max-width: 500px) { .dashboard-grid-2col { grid-template-columns: 1fr; } }
-        .dash-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; }
-        .box-title { font-size: 15px; margin-bottom: 12px; color: #0f172a; }
-        .stat-bar-group { margin-bottom: 8px; }
-        .stat-bar-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }
+        .dash-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; }
+        .box-title { font-size: 14px; margin-bottom: 10px; color: #0f172a; }
+        .stat-bar-group { margin-bottom: 6px; }
+        .stat-bar-header { display: flex; justify-content: space-between; font-size: 11.5px; margin-bottom: 2px; }
         .bar-track { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
         .bar-fill { height: 100%; background: #0077ff; }
         .bar-fill-green { background: #10b981; }
-        .info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 4px; }
-        .recommendation-card { display: flex; align-items: center; background: #ffffff; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 5px solid #0077ff; }
+        .info-row { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 3px; }
+        .recommendation-card { display: flex; align-items: center; background: #ffffff; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); border-left: 5px solid #0077ff; }
         .recommendation-card.other-card { background: #faf5ff; border-left-color: #7c3aed; }
-        .card-left { width: 65px; height: 65px; margin-right: 15px; flex-shrink: 0; }
+        .card-left { width: 55px; height: 55px; margin-right: 12px; flex-shrink: 0; }
         .circular-chart { max-width: 100%; max-height: 100%; }
         .circle-bg { fill: none; stroke: #e2e8f0; stroke-width: 3.8; }
         .circle { fill: none; stroke-width: 3.8; stroke-linecap: round; }
         .percentage { fill: #1e293b; font-size: 9px; font-weight: bold; text-anchor: middle; }
-        .rec-title { margin: 0 0 4px 0; font-size: 15px; color: #0f172a; }
-        .rec-org, .rec-note { margin: 2px 0; font-size: 12px; color: #64748b; }
-        .disclaimer-note { margin-top: 16px; padding: 14px; background: #fffbe0; border: 1px solid #ffe58f; border-radius: 10px; font-size: 12px; color: #855900; text-align: center; }
+        .rec-title { margin: 0 0 3px 0; font-size: 14px; color: #0f172a; }
+        .rec-org, .rec-note { margin: 2px 0; font-size: 11.5px; color: #64748b; }
+        .disclaimer-note { margin-top: 14px; padding: 12px; background: #fffbe0; border: 1px solid #ffe58f; border-radius: 10px; font-size: 11.5px; color: #855900; text-align: center; }
     </style>
-  <script type="module" crossorigin src="./assets/index-BaCXbOEV.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -98,7 +112,7 @@
                     <p class="subtitle">СШОР «Академия спорта» г. Лангепас</p>
                 </div>
             </div>
-            <div id="apiStatus" class="api-badge">STAS API: Проверка...</div>
+            <div id="apiStatus" class="api-badge">STAS API: Подключено</div>
         </header>
 
         <!-- ЭКРАН 1: Приветствие -->
@@ -136,7 +150,7 @@
         <div id="reactionScreen" class="card-screen hidden">
             <div class="tapping-header">
                 <h2>⚡ Тест на сенсомоторную реакцию</h2>
-                <p>Нажмите "НАЧАТЬ ТЕСТ", дождитесь, пока круг станет <b>ЗЕЛЕНЫМ</b>, и кликните по нему как можно быстрее!</p>
+                <p class="subtitle-text">Нажмите "НАЧАТЬ ТЕСТ", дождитесь, пока круг станет <b>ЗЕЛЕНЫМ</b>, и кликните по нему!</p>
             </div>
             <div id="reactionBox" class="reaction-target-box">
                 <span id="reactionPrompt">Нажмите кнопку ниже для старта</span>
@@ -152,18 +166,15 @@
             </div>
 
             <div class="test-instruction-box">
-                <h3>📋 Инструкция по прохождению:</h3>
                 <ul>
-                    <li><b>Максимальный темп:</b> Кликайте (тапайте) по квадрату как можно чаще и быстрее.</li>
-                    <li><b>Следите за зелёным цветом:</b> Нажимайте <u>СТРОГО</u> по подсвеченному <b>ЗЕЛЁНОМУ</b> квадрату.</li>
-                    <li><b>Автоматический переход:</b> Каждые <b>5 секунд</b> активный квадрат переключается по часовой стрелке. Тест длится ровно <b>30 секунд</b>.</li>
-                    <li><b>Не останавливайтесь:</b> Переходите к следующему квадрату мгновенно, не снижая темп!</li>
+                    <li>Кликайте по подсвеченному <b>ЗЕЛЁНОМУ</b> квадрату с максимальной частотой.</li>
+                    <li>Каждые <b>5 секунд</b> активный квадрат переключается по часовой стрелке. Всего: <b>30 сек</b>.</li>
                 </ul>
             </div>
 
             <div class="tapping-timer-box">
                 <div class="timer-value" id="tapTimer">30</div>
-                <div class="timer-label">секунд всего (активен квадрат <span id="currentSquareNum">1</span> из 6)</div>
+                <div class="timer-label">секунд (активен квадрат <span id="currentSquareNum">1</span> из 6)</div>
             </div>
 
             <div class="tapping-grid-container" id="tappingGrid">
@@ -190,6 +201,7 @@
                         </div>
                     </div>
                     <div class="action-buttons-group">
+                        <button type="button" id="pdfBtn" class="btn-outline" style="background:#0077ff; color:#fff; border:none;">📥 PDF-отчет</button>
                         <button type="button" id="restartBtn" class="btn-outline">Пройти еще раз 🔄</button>
                     </div>
                 </div>
@@ -226,22 +238,22 @@
                 </div>
 
                 <div class="dashboard-recommendations-section">
-                    <h2 class="section-title">📐 Математический расчёт совместимости с секциями Лангепаса</h2>
+                    <h2 class="section-title" style="font-size:15px; margin-bottom:10px;">📐 Математический расчёт совместимости с секциями Лангепаса</h2>
                     <div id="recommendedGrid" class="cards-grid"></div>
                 </div>
 
-                <div class="dashboard-recommendations-section" style="margin-top: 25px;">
-                    <h2 class="section-title" style="color: #7c3aed;">🌐 Другие перспективные виды спорта (Реестр РФ)</h2>
+                <div class="dashboard-recommendations-section" style="margin-top: 18px;">
+                    <h2 class="section-title" style="font-size:15px; margin-bottom:10px; color: #7c3aed;">🌐 Другие перспективные виды спорта (Реестр РФ)</h2>
                     <div id="otherRecommendedGrid" class="cards-grid"></div>
                 </div>
 
                 <div class="disclaimer-note">
-                    <b>* Примечание:</b> Результаты данного тестирования носят исключительно рекомендательный характер, сформированы на основе вероятностных математических моделей и не являются официальным медицинским или педагогическим заключением.
+                    <b>* Примечание:</b> Результаты носят рекомендательный характер и сформированы на основе математических моделей.
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Модуль приложения -->
+    <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

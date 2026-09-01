@@ -143,14 +143,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function toggleNormsMode() {
     useNormsMode = !useNormsMode;
-    const btn = document.getElementById("modeBtn");
-    if (btn) {
+    const box = document.getElementById("modeCheckbox");
+    if (box && box.parentElement) {
         if (useNormsMode) {
-            btn.classList.add("active");
-            btn.textContent = "✓ Включен расширенный режим (ввод нормативов ОФП)";
+            box.parentElement.classList.add("active");
         } else {
-            btn.classList.remove("active");
-            btn.textContent = "📋 Я знаю свои результаты нормативов по физической подготовке";
+            box.parentElement.classList.remove("active");
         }
     }
 }
@@ -630,16 +628,28 @@ async function fetchServerGigaChatAI() {
 
 function downloadPDF() {
     const element = document.getElementById('pdfReportContent');
+    const noPdfElements = element.querySelectorAll('.no-pdf');
+    
+    // Временно скрываем кнопки
+    noPdfElements.forEach(el => el.style.display = 'none');
+
     const opt = {
-        margin: 8,
-        filename: `STAS_Report_${userAnswers.full_name || 'Sportsman'}.pdf`,
+        margin: [8, 8, 8, 8],
+        filename: `Отчет_СТАС_${userAnswers.full_name || 'Спортсмен'}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
+
     if (window.html2pdf) {
-        window.html2pdf().set(opt).from(element).save();
+        window.html2pdf().set(opt).from(element).save().then(() => {
+            noPdfElements.forEach(el => el.style.display = 'flex');
+        }).catch(() => {
+            noPdfElements.forEach(el => el.style.display = 'flex');
+            window.print();
+        });
     } else {
+        noPdfElements.forEach(el => el.style.display = 'flex');
         window.print();
     }
 }
@@ -678,7 +688,7 @@ function renderDashboard(data) {
 
     if (heightEl) heightEl.textContent = `${userAnswers.height_cm} см`;
     if (weightEl) weightEl.textContent = `${userAnswers.weight_kg} кг`;
-    if (bmiEl) bmiEl.textContent = `${bmi} кг/м²`;
+    if (bmiEl) bmiEl.textContent = `${bmi}`;
     if (reactionEl) reactionEl.textContent = `${userAnswers.reaction_ms} мс`;
     if (tempEl) tempEl.textContent = temperamentRu[userAnswers.temperament] || userAnswers.temperament;
     if (tapEl) tapEl.textContent = userAnswers.tapping_test.nerve_type;

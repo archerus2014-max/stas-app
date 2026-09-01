@@ -7,11 +7,8 @@
 }
 
 html, body {
-    position: relative !important;
     width: 100%;
-    height: 100%;
-    overflow-x: hidden;
-    overscroll-behavior: none;
+    min-height: 100vh;
     background-color: #f1f5f9;
     color: #1e293b;
 }
@@ -27,22 +24,14 @@ body {
     max-width: 600px;
     background: #ffffff;
     border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    padding: 18px;
-    min-height: 90vh;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    padding: 16px;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .hidden {
     display: none !important;
-}
-
-.card-screen.hidden, 
-#resultsScreen.hidden {
-    display: none !important;
-}
-
-.card-screen:not(.hidden) {
-    display: block !important;
 }
 
 /* Шапка */
@@ -51,111 +40,138 @@ body {
     justify-content: space-between;
     align-items: center;
     border-bottom: 2px solid #f1f5f9;
-    padding-bottom: 12px;
-    margin-bottom: 16px;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
 }
 
 .header-content {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .logo-img {
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
     object-fit: contain;
 }
 
 .header-titles h1 {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     color: #0f172a;
 }
 
 .subtitle {
-    font-size: 12px;
+    font-size: 11.5px;
     color: #64748b;
 }
 
 .api-badge {
     font-size: 11px;
-    background: #e2e8f0;
-    color: #475569;
+    background: #dcfce7;
+    color: #15803d;
     padding: 4px 8px;
     border-radius: 12px;
     font-weight: 600;
+    white-space: nowrap;
 }
 
-.api-badge.connected {
-    background: #dcfce7;
-    color: #15803d;
-}
-
-/* Экранные блоки */
-.card-screen {
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
+/* Приветствие */
 .mascot-box {
     text-align: center;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .mascot-img-large {
-    width: 130px;
-    height: 130px;
+    width: 115px;
+    height: 115px;
     object-fit: contain;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .welcome-text h2 {
-    font-size: 19px;
-    margin-bottom: 8px;
+    font-size: 18px;
+    margin-bottom: 6px;
     color: #0f172a;
 }
 
 .welcome-text p {
-    font-size: 13.5px;
-    line-height: 1.45;
+    font-size: 13px;
+    line-height: 1.4;
     color: #475569;
 }
 
-/* Кнопка переключения режима ОФП */
-.mode-selection-box {
-    margin-bottom: 16px;
-}
-
-.btn-mode-toggle {
-    width: 100%;
+/* Чекбокс выбора режима */
+.mode-checkbox-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     background: #f8fafc;
-    border: 2px dashed #0077ff;
-    color: #0077ff;
-    padding: 12px;
+    border: 2px solid #cbd5e1;
     border-radius: 12px;
-    font-size: 13px;
-    font-weight: 600;
+    padding: 12px;
+    margin: 14px 0;
     cursor: pointer;
     transition: all 0.2s ease;
-    text-align: center;
 }
 
-.btn-mode-toggle:hover {
+.mode-checkbox-card:hover {
+    border-color: #0077ff;
     background: #f0f7ff;
 }
 
-.btn-mode-toggle.active {
-    background: #0077ff;
-    color: #ffffff;
-    border-style: solid;
+.mode-checkbox-card.active {
+    border-color: #0077ff;
+    background: #eef6ff;
 }
 
-/* Управление кнопками */
+.custom-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #94a3b8;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.mode-checkbox-card.active .custom-checkbox {
+    background: #0077ff;
+    border-color: #0077ff;
+}
+
+.checkmark {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
+    display: none;
+}
+
+.mode-checkbox-card.active .checkmark {
+    display: block;
+}
+
+.checkbox-text {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.checkbox-text b {
+    font-size: 13.5px;
+    color: #0f172a;
+}
+
+.checkbox-text span {
+    font-size: 11.5px;
+    color: #64748b;
+}
+
+/* Кнопки */
 .btn-primary {
     width: 100%;
     background: #0077ff;
@@ -169,7 +185,7 @@ body {
     transition: background 0.2s;
 }
 
-.btn-primary:hover {
+.btn-primary:active {
     background: #0056cc;
 }
 
@@ -184,32 +200,21 @@ body {
     cursor: pointer;
 }
 
-.btn-outline {
-    background: transparent;
-    border: 2px solid #0077ff;
-    color: #0077ff;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-/* Прогресс-бар */
+/* Квиз */
 .progress-bar-container {
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .step-label {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #64748b;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 
 .progress-track {
     width: 100%;
-    height: 7px;
+    height: 6px;
     background: #e2e8f0;
     border-radius: 4px;
     overflow: hidden;
@@ -222,19 +227,18 @@ body {
     transition: width 0.3s ease;
 }
 
-/* Вопросы */
 .question-title {
-    font-size: 17px;
+    font-size: 16px;
     margin-bottom: 12px;
     color: #0f172a;
 }
 
 .quiz-input {
     width: 100%;
-    padding: 11px 14px;
+    padding: 11px 13px;
     border: 2px solid #cbd5e1;
     border-radius: 10px;
-    font-size: 15px !important;
+    font-size: 15px;
     outline: none;
 }
 
@@ -242,79 +246,72 @@ body {
     border-color: #0077ff;
 }
 
-/* Нормативы */
-.normative-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 14px;
-}
-
-.normative-desc {
-    font-size: 12.5px;
-    color: #475569;
-    margin-bottom: 8px;
-}
-
-.normative-avg {
-    font-size: 12px;
-    font-weight: 600;
-    color: #0077ff;
-    margin-bottom: 10px;
-}
-
-.normative-input-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.normative-unit {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #64748b;
-}
-
-/* Сетка выбора */
 .cards-select-grid {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-top: 8px;
 }
 
 .select-card {
     background: #f8fafc;
     border: 2px solid #e2e8f0;
     border-radius: 10px;
-    padding: 12px;
-    font-size: 14px;
+    padding: 11px;
+    font-size: 13.5px;
     font-weight: 500;
     cursor: pointer;
     text-align: center;
     transition: all 0.2s;
 }
 
-.select-card:hover {
-    border-color: #0077ff;
-    background: #f0f7ff;
-}
-
 .select-card.active {
     border-color: #0077ff;
-    background: #e6f0ff;
+    background: #eef6ff;
     color: #0077ff;
-    font-weight: bold;
+    font-weight: 700;
 }
 
-/* Компактный Теппинг-тест без скролла */
-.tapping-header {
-    text-align: center;
+.normative-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.normative-desc {
+    font-size: 12px;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.normative-avg {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #0077ff;
     margin-bottom: 8px;
 }
 
-.tapping-header h2 {
-    font-size: 17px;
+.normative-input-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.normative-unit {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+/* Компактные тесты */
+.compact-header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.compact-header h2 {
+    font-size: 16px;
+    color: #0f172a;
 }
 
 .subtitle-text {
@@ -323,52 +320,22 @@ body {
     margin-top: 2px;
 }
 
-.test-instruction-box {
-    background: #f0f7ff;
-    border: 1px solid #bae6fd;
-    border-radius: 10px;
-    padding: 8px 12px;
-    margin-bottom: 10px;
-    text-align: left;
-}
-
-.test-instruction-box ul {
-    list-style-type: none;
-    padding-left: 0;
-    margin: 0;
-}
-
-.test-instruction-box li {
-    font-size: 11.5px;
-    color: #334155;
-    margin-bottom: 2px;
-    position: relative;
-    padding-left: 14px;
-}
-
-.test-instruction-box li::before {
-    content: "•";
-    color: #0077ff;
-    font-weight: bold;
-    position: absolute;
-    left: 0;
-}
-
 .reaction-target-box {
     width: 100%;
-    height: 150px;
+    height: 140px;
     background: #0077ff;
-    border-radius: 14px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 15px;
     cursor: pointer;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     text-align: center;
-    padding: 12px;
+    padding: 10px;
+    user-select: none;
 }
 
 .tapping-timer-box {
@@ -377,14 +344,14 @@ body {
 }
 
 .timer-value {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 800;
     color: #0077ff;
     line-height: 1;
 }
 
 .timer-label {
-    font-size: 12px;
+    font-size: 11.5px;
     color: #64748b;
 }
 
@@ -392,7 +359,7 @@ body {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    max-width: 360px;
+    max-width: 320px;
     margin: 0 auto 12px auto;
 }
 
@@ -400,35 +367,27 @@ body {
     background: #f1f5f9;
     border: 2px solid #cbd5e1;
     border-radius: 10px;
-    height: 68px;
+    height: 60px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 11px;
     color: #64748b;
     user-select: none;
-    touch-action: manipulation;
-    transition: all 0.15s ease;
+    cursor: pointer;
 }
 
 .tap-square.active {
     background: #dcfce7;
     border-color: #10b981;
     color: #15803d;
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
-    transform: scale(1.02);
-}
-
-.tap-square.active:active {
-    background: #bbf7d0;
-    transform: scale(0.98);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
 }
 
 .tap-square b {
-    font-size: 18px;
+    font-size: 16px;
     color: #0f172a;
-    margin-top: 1px;
 }
 
 /* Дашборд результатов */
@@ -437,71 +396,108 @@ body {
     justify-content: space-between;
     align-items: center;
     background: #f8fafc;
-    padding: 12px;
+    padding: 10px 12px;
     border-radius: 12px;
     margin-bottom: 12px;
-    gap: 8px;
 }
 
 .child-profile-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+}
+
+.child-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.child-sub {
+    font-size: 12px;
+    color: #64748b;
 }
 
 .mascot-img-small {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     object-fit: contain;
 }
 
 .action-buttons-group {
     display: flex;
     gap: 6px;
-    flex-wrap: wrap;
 }
 
+.btn-action-pdf {
+    background: #0077ff;
+    color: #fff;
+    border: none;
+    padding: 7px 11px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-action-reload {
+    background: #e2e8f0;
+    color: #334155;
+    border: none;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Заключение ИИ - аккуратная рамка без выхода за границы */
 .gigachat-card {
     background: #f0f7ff;
     border: 1.5px solid #bae6fd;
     border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 18px;
-    box-shadow: 0 2px 8px rgba(0, 119, 255, 0.06);
+    padding: 14px;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .gigachat-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 6px;
+    margin-bottom: 8px;
     color: #0369a1;
-    font-size: 15px;
+}
+
+.gigachat-header h3 {
+    font-size: 14.5px;
 }
 
 .gigachat-body {
-    font-size: 13.5px;
-    line-height: 1.6;
+    font-size: 13px;
+    line-height: 1.5;
     color: #1e293b;
-    word-break: break-word;
+    word-wrap: break-word;
 }
 
 .gigachat-body p {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .gigachat-body p:last-child {
     margin-bottom: 0;
 }
 
+/* Сетка навыков */
 .dashboard-grid-2col {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 18px;
+    gap: 10px;
+    margin-bottom: 14px;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 480px) {
     .dashboard-grid-2col {
         grid-template-columns: 1fr;
     }
@@ -511,28 +507,29 @@ body {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
-    padding: 12px;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 .box-title {
-    font-size: 14px;
-    margin-bottom: 10px;
+    font-size: 13px;
+    margin-bottom: 8px;
     color: #0f172a;
 }
 
 .stat-bar-group {
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .stat-bar-header {
     display: flex;
     justify-content: space-between;
-    font-size: 11.5px;
+    font-size: 11px;
     margin-bottom: 2px;
 }
 
 .bar-track {
-    height: 6px;
+    height: 5px;
     background: #e2e8f0;
     border-radius: 3px;
     overflow: hidden;
@@ -550,21 +547,29 @@ body {
 .info-row {
     display: flex;
     justify-content: space-between;
-    font-size: 12.5px;
-    margin-bottom: 6px;
+    font-size: 12px;
+    margin-bottom: 5px;
     border-bottom: 1px dashed #e2e8f0;
-    padding-bottom: 3px;
+    padding-bottom: 2px;
 }
 
+.section-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+/* Рекомендации */
 .recommendation-card {
     display: flex;
     align-items: center;
     background: #ffffff;
-    border-radius: 12px;
-    padding: 14px;
-    margin-bottom: 10px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.04);
-    border-left: 5px solid #0077ff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #0077ff;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
 }
 
 .recommendation-card.other-card {
@@ -573,9 +578,9 @@ body {
 }
 
 .card-left {
-    width: 55px;
-    height: 55px;
-    margin-right: 12px;
+    width: 48px;
+    height: 48px;
+    margin-right: 10px;
     flex-shrink: 0;
 }
 
@@ -594,7 +599,6 @@ body {
     fill: none;
     stroke-width: 3.8;
     stroke-linecap: round;
-    transition: stroke-dasharray 0.6s ease;
 }
 
 .percentage {
@@ -605,24 +609,24 @@ body {
 }
 
 .rec-title {
-    margin: 0 0 3px 0;
-    font-size: 14px;
+    font-size: 13.5px;
     color: #0f172a;
+    margin-bottom: 2px;
 }
 
 .rec-org, .rec-note {
-    margin: 2px 0;
-    font-size: 11.5px;
+    font-size: 11px;
     color: #64748b;
+    margin: 1px 0;
 }
 
 .disclaimer-note {
-    margin-top: 14px;
-    padding: 12px;
+    margin-top: 12px;
+    padding: 10px;
     background: #fffbe0;
     border: 1px solid #ffe58f;
-    border-radius: 10px;
-    font-size: 11.5px;
+    border-radius: 8px;
+    font-size: 11px;
     color: #855900;
     text-align: center;
 }
