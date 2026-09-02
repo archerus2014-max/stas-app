@@ -1,5 +1,6 @@
 import os
 import io
+import uuid
 import hashlib
 import requests
 import urllib3
@@ -25,7 +26,10 @@ load_dotenv()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# Загрузка шрифта с поддержкой кириллицы
+# Создание временной папки под сгенерированные PDF для раздачи
+PDF_TEMP_DIR = os.path.join(tempfile.gettempdir(), "stas_generated_pdfs")
+os.makedirs(PDF_TEMP_DIR, exist_ok=True)
+
 font_path = os.path.join(tempfile.gettempdir(), "DejaVuSans.ttf")
 font_bold_path = os.path.join(tempfile.gettempdir(), "DejaVuSans-Bold.ttf")
 if not os.path.exists(font_path):
@@ -247,7 +251,7 @@ def ask_gigachat(prompt_text: str, credentials: str) -> Optional[str]:
                 "content": (
                     "Ты — Бельчонок СТАС, дружелюбный спортивный агент СШОР «Академия спорта» г. Лангепас. "
                     "Начинай текст СТРОГО с личного обращения по ИМЕНИ (например: 'Юрий, ты большой молодец!'). "
-                    "Не используй фамилию в обращении. Полностью завершай свои мысли."
+                    "Не используй фамилию в обращении. Не используй маркеры форматирования вроде двойных звёздочек (**)."
                 )
             },
             {"role": "user", "content": prompt_text}
@@ -259,7 +263,7 @@ def ask_gigachat(prompt_text: str, credentials: str) -> Optional[str]:
         response = requests.post(url, headers=headers, json=payload, verify=False, timeout=15)
         if response.status_code == 200:
             content = response.json()['choices'][0]['message']['content']
-            return content[:1990] if len(content) > 2000 else content
+            return content.replace("**", "").replace("*", "")
     except Exception:
         pass
     return None
@@ -380,11 +384,8 @@ async def analyze_athlete(payload: AthletePayload):
         "other_top_sports": other_top_sports
     })
 
-@app.post("/api/generate-pdf")
-async def generate_pdf(payload: PDFPayload):
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=24, leftMargin=24, topMargin=24, bottomMargin=24)
-    
+def build_pdf_doc(payload: PDFPayload, file_path: str):
+    doc = SimpleDocTemplate(file_path, pagesize=A4, rightMargin=24, leftMargin=24, topMargin=24, bottomMargin=24)
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle('TStyle', fontName=BOLD_FONT, fontSize=15, leading=17, textColor=colors.HexColor("#0f172a"))
     sub_style = ParagraphStyle('SStyle', fontName=BASE_FONT, fontSize=10, leading=13, textColor=colors.HexColor("#64748b"))
@@ -393,13 +394,15 @@ async def generate_pdf(payload: PDFPayload):
     card_t_style = ParagraphStyle('CTStyle', fontName=BOLD_FONT, fontSize=10.5, leading=12, textColor=colors.HexColor("#0f172a"))
     card_s_style = ParagraphStyle('CSStyle', fontName=BASE_FONT, fontSize=9, leading=11, textColor=colors.HexColor("#475569"))
 
+    clean_ai = payload.ai_text.replace("**", "").replace("*", "").replace("<p>", "").replace("</p>", "<br/>")
+
     story = [
         Paragraph(f"Спортивный агент СТАС — Отчет: {payload.full_name}", title_style),
         Paragraph(f"Параметры: {payload.height_cm} см | {payload.weight_kg} кг | ИМТ: {payload.bmi} | Прогноз роста: {payload.target_height} см", sub_style),
         Spacer(1, 10),
         Paragraph("🤖 Экспертное заключение Бельчонка СТАСА", head_style),
         Spacer(1, 4),
-        Paragraph(payload.ai_text.replace("<p>", "").replace("</p>", "<br/>"), body_style),
+        Paragraph(clean_ai, body_style),
         Spacer(1, 10),
         Paragraph("📊 Физические навыки и диагностика", head_style),
         Spacer(1, 4)
@@ -446,21 +449,31 @@ async def generate_pdf(payload: PDFPayload):
     story.append(Paragraph("* Рекомендации сформированы на основе математических моделей СШОР «Академия спорта».", sub_style))
 
     doc.build(story)
-    buffer.seek(0)
 
-    filename = f"STAS_Report_{payload.full_name}.pdf"
-    return StreamingResponse(
-        buffer,
-        media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename*=utf-8''{filename}"}
-    )
+@app.post("/api/generate-pdf")
+async def generate_pdf(payload: PDFPayload, request: Request):
+    file_id = f"{uuid.uuid4().hex}.pdf"
+    file_path = os.path.join(PDF_TEMP_DIR, file_id)
+    build_pdf_doc(payload, file_path)
 
-@app.get("/")
-async def serve_root():
-    return FileResponse("index.html")
+    base_url = str(request.base_url).rstrip("/")
+    download_url = f"{base_url}/download-pdf/{file_id}"
 
-@app.get("/index.html")
-async def serve_index():
-    return FileResponse("index.html")
+    return JSONResponse({
+        "status": "success",
+        "url": download_url
+    })
 
-app.mount("/", StaticFiles(directory="."), name="static")
+@app.get("/download-pdf/{filename}")
+async def download_pdf_file(filename: str):
+    file_path = os.path.join(PDF_TEMP_DIR, filename)
+    if os.path.exists(file_path):
+        return FileResponse(
+            file_path,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"inline; filename=\"STAS_Report.pdf\"",
+                "Access-Control-Allow-Origin": "*"
+            }
+        )
+    return JSONResponse({"status": "not_found"}, status_code=404)

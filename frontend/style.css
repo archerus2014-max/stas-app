@@ -1,0 +1,607 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #f1f5f9;
+    color: #1e293b;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    padding: 8px;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 600px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    padding: 16px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-img {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+}
+
+.header-titles h1 {
+    font-size: 15.5px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.subtitle {
+    font-size: 11px;
+    color: #64748b;
+}
+
+.api-badge {
+    font-size: 11px;
+    background: #dcfce7;
+    color: #15803d;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.mascot-box {
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.mascot-img-large {
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    margin-bottom: 8px;
+}
+
+.welcome-text h2 {
+    font-size: 17.5px;
+    margin-bottom: 6px;
+    color: #0f172a;
+}
+
+.welcome-text p {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #475569;
+}
+
+.mode-checkbox-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8fafc;
+    border: 2px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 12px;
+    margin: 14px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mode-checkbox-card:hover, .mode-checkbox-card.active {
+    border-color: #0077ff;
+    background: #eef6ff;
+}
+
+.custom-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #94a3b8;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.mode-checkbox-card.active .custom-checkbox {
+    background: #0077ff;
+    border-color: #0077ff;
+}
+
+.checkmark {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
+    display: none;
+}
+
+.mode-checkbox-card.active .checkmark {
+    display: block;
+}
+
+.checkbox-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.checkbox-text b {
+    font-size: 13.5px;
+    color: #0f172a;
+}
+
+.checkbox-text span {
+    font-size: 11.5px;
+    color: #64748b;
+}
+
+.btn-primary {
+    width: 100%;
+    background: #0077ff;
+    color: #ffffff;
+    border: none;
+    padding: 13px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-primary:active {
+    background: #0056cc;
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #334155;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.progress-bar-container {
+    margin-bottom: 14px;
+}
+
+.step-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.progress-track {
+    width: 100%;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #0077ff;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.question-title {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #0f172a;
+}
+
+.quiz-input {
+    width: 100%;
+    padding: 11px 13px;
+    border: 2px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
+}
+
+.quiz-input:focus {
+    border-color: #0077ff;
+}
+
+.cards-select-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.select-card {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 11px;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+}
+
+.select-card.active {
+    border-color: #0077ff;
+    background: #eef6ff;
+    color: #0077ff;
+    font-weight: 700;
+}
+
+.normative-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.normative-avg {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #0077ff;
+    margin-bottom: 8px;
+}
+
+.normative-input-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.normative-unit {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.compact-header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.compact-header h2 {
+    font-size: 16px;
+    color: #0f172a;
+}
+
+.subtitle-text {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.reaction-target-box {
+    width: 100%;
+    height: 140px;
+    background: #0077ff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    margin-bottom: 14px;
+    text-align: center;
+    padding: 10px;
+    user-select: none;
+}
+
+.tapping-timer-box {
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.timer-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0077ff;
+}
+
+.timer-label {
+    font-size: 11.5px;
+    color: #64748b;
+}
+
+.tapping-grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-width: 320px;
+    margin: 0 auto 12px auto;
+}
+
+.tap-square {
+    background: #f1f5f9;
+    border: 2px solid #cbd5e1;
+    border-radius: 10px;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #64748b;
+    user-select: none;
+    cursor: pointer;
+}
+
+.tap-square.active {
+    background: #dcfce7;
+    border-color: #10b981;
+    color: #15803d;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.tap-square b {
+    font-size: 16px;
+    color: #0f172a;
+}
+
+.dashboard-header-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.child-profile-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.child-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.child-sub {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.mascot-img-small {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+}
+
+.action-buttons-group {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-action-pdf {
+    background: #0077ff;
+    color: #fff;
+    border: none;
+    padding: 7px 11px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-action-reload {
+    background: #e2e8f0;
+    color: #334155;
+    border: none;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.gigachat-card {
+    background: #f0f7ff;
+    border: 1.5px solid #bae6fd;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+}
+
+.gigachat-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    color: #0369a1;
+}
+
+.gigachat-header h3 {
+    font-size: 14.5px;
+}
+
+.gigachat-body {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #1e293b;
+    word-wrap: break-word;
+}
+
+.gigachat-body p {
+    margin-bottom: 8px;
+}
+
+.gigachat-body p:last-child {
+    margin-bottom: 0;
+}
+
+.dashboard-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+@media (max-width: 480px) {
+    .dashboard-grid-2col {
+        grid-template-columns: 1fr;
+    }
+}
+
+.dash-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.box-title {
+    font-size: 13px;
+    margin-bottom: 8px;
+    color: #0f172a;
+}
+
+.stat-bar-group {
+    margin-bottom: 5px;
+}
+
+.stat-bar-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-bottom: 2px;
+}
+
+.bar-track {
+    height: 5px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: #0077ff;
+}
+
+.bar-fill-green {
+    background: #10b981;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 5px;
+    border-bottom: 1px dashed #e2e8f0;
+    padding-bottom: 2px;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+/* Круглые диаграммы и карточки видов спорта */
+.recommendation-card {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #0077ff;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+
+.recommendation-card.other-card {
+    background: #faf5ff;
+    border-left-color: #7c3aed;
+}
+
+.card-left {
+    width: 48px;
+    height: 48px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.circle-chart {
+    width: 100%;
+    height: 100%;
+}
+
+.circular-chart {
+    display: block;
+    width: 100%;
+    max-height: 48px;
+}
+
+.circle-bg {
+    fill: none;
+    stroke: #e2e8f0;
+    stroke-width: 3.8;
+}
+
+.circle {
+    fill: none;
+    stroke-width: 3.8;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.5s ease;
+}
+
+.percentage {
+    fill: #0f172a;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-anchor: middle;
+    font-family: inherit;
+}
+
+.card-right {
+    flex-grow: 1;
+}
+
+.rec-title {
+    font-size: 13.5px;
+    color: #0f172a;
+    margin-bottom: 2px;
+}
+
+.rec-org, .rec-note {
+    font-size: 11px;
+    color: #64748b;
+    margin: 1px 0;
+}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Спортивный агент СТАС</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="app-container" id="appRoot">
+        <header class="main-header">
+            <div class="header-content">
+                <img src="./logo.png" alt="СШОР" class="logo-img" onerror="this.style.display='none'">
+                <div class="header-titles">
+                    <h1>Спортивный агент СТАС</h1>
+                    <p class="subtitle">СШОР «Академия спорта» г. Лангепас</p>
+                </div>
+            </div>
+            <div id="apiStatus" class="api-badge">STAS Engine: Онлайн</div>
+        </header>
+
+        <!-- ЭКРАН 1: Приветствие -->
+        <div id="welcomeScreen" class="card-screen">
+            <div class="mascot-box">
+                <img src="./stas.png" alt="Бельчонок Стас" class="mascot-img-large" onerror="this.style.display='none'">
+                <div class="welcome-text">
+                    <h2>Привет! Я СТАС — твой спортивный агент</h2>
+                    <p>Пройди комплексное тестирование (антропометрия, психотип, сенсомоторная реакция и классический Теппинг-тест Ильина). Мы подберём наиболее подходящие секции!</p>
+                </div>
+            </div>
+
+            <div class="mode-checkbox-card" id="modeCard">
+                <div class="custom-checkbox" id="modeCheckbox">
+                    <span class="checkmark">✓</span>
+                </div>
+                <div class="checkbox-text">
+                    <b>Выбрать расширенный режим</b>
+                    <span>Я знаю свои результаты нормативов по физической подготовке (ОФП)</span>
+                </div>
+            </div>
+
+            <button type="button" class="btn-primary" id="startQuizBtn">Начать тестирование ➔</button>
+        </div>
+
+        <!-- ЭКРАН 2: Опросник -->
+        <div id="quizScreen" class="card-screen hidden">
+            <div class="progress-bar-container">
+                <div class="step-label" id="stepIndicator">Шаг 1</div>
+                <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+            </div>
+            <div id="questionContainer" class="question-container"></div>
+            <div class="quiz-nav-btns" style="margin-top: 12px;">
+                <button type="button" id="prevBtn" class="btn-secondary" style="display:none;">⬅ Назад</button>
+            </div>
+        </div>
+
+        <!-- ЭКРАН 3: Реакция -->
+        <div id="reactionScreen" class="card-screen hidden">
+            <div class="compact-header">
+                <h2>⚡ Тест на сенсомоторную реакцию</h2>
+                <p class="subtitle-text">Дождитесь, пока экран станет <b>ЗЕЛЁНЫМ</b>, и коснитесь его как можно быстрее!</p>
+            </div>
+            <div id="reactionBox" class="reaction-target-box">
+                <span id="reactionPrompt">Нажмите кнопку ниже для старта</span>
+            </div>
+            <button type="button" id="startReactionBtn" class="btn-primary">🚀 НАЧАТЬ ТЕСТ РЕАКЦИИ</button>
+        </div>
+
+        <!-- ЭКРАН 4: Теппинг-тест -->
+        <div id="tappingScreen" class="card-screen hidden">
+            <div class="compact-header">
+                <h2>⏱️ Тест Ильина (6 квадратов)</h2>
+                <p class="subtitle-text">Кликайте с максимальной частотой по <b>ЗЕЛЁНОМУ</b> квадрату (смена каждые 5 сек)</p>
+            </div>
+
+            <div class="tapping-timer-box">
+                <div class="timer-value" id="tapTimer">30</div>
+                <div class="timer-label">секунд осталось (активен квадрат <span id="currentSquareNum">1</span>/6)</div>
+            </div>
+
+            <div class="tapping-grid-container" id="tappingGrid">
+                <div class="tap-square active" data-sq="1" id="sq1"><span>1</span><b id="sqCount1">0</b></div>
+                <div class="tap-square" data-sq="2" id="sq2"><span>2</span><b id="sqCount2">0</b></div>
+                <div class="tap-square" data-sq="3" id="sq3"><span>3</span><b id="sqCount3">0</b></div>
+                <div class="tap-square" data-sq="6" id="sq6"><span>6</span><b id="sqCount6">0</b></div>
+                <div class="tap-square" data-sq="5" id="sq5"><span>5</span><b id="sqCount5">0</b></div>
+                <div class="tap-square" data-sq="4" id="sq4"><span>4</span><b id="sqCount4">0</b></div>
+            </div>
+
+            <button type="button" id="startTapBtn" class="btn-primary">🚀 НАЧАТЬ ТЕППИНГ-ТЕСТ</button>
+        </div>
+
+        <!-- ЭКРАН 5: Результаты -->
+        <div id="resultsScreen" class="card-screen hidden">
+            <div id="pdfReportContent">
+                <div class="dashboard-header-card">
+                    <div class="child-profile-info">
+                        <img src="./stas.png" alt="СТАС" class="mascot-img-small" onerror="this.style.display='none'">
+                        <div>
+                            <h2 id="resChildName" class="child-name">Спортсмен</h2>
+                            <p id="resChildAgeSex" class="child-sub">-- см | -- кг</p>
+                        </div>
+                    </div>
+                    <div class="action-buttons-group no-pdf">
+                        <button type="button" class="btn-action-pdf" id="downloadPdfBtn">📥 PDF-отчет</button>
+                        <button type="button" class="btn-action-reload" id="restartBtn">🔄 Заново</button>
+                    </div>
+                </div>
+
+                <div class="gigachat-card">
+                    <div class="gigachat-header">
+                        <span class="ai-sparkle">🤖</span>
+                        <h3>Экспертное заключение Бельчонка СТАСА</h3>
+                    </div>
+                    <div id="resAiText" class="gigachat-body">
+                        <p style="color: #0077ff;">Бельчонок СТАС формирует отчёт...</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid-2col">
+                    <div class="dash-box">
+                        <h3 class="box-title">📊 Физические навыки</h3>
+                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Скорость</span><b id="barSpeedVal">0%</b></div><div class="bar-track"><div id="barSpeedFill" class="bar-fill"></div></div></div>
+                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Сила</span><b id="barStrengthVal">0%</b></div><div class="bar-track"><div id="barStrengthFill" class="bar-fill"></div></div></div>
+                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Координация</span><b id="barCoordVal">0%</b></div><div class="bar-track"><div id="barCoordFill" class="bar-fill"></div></div></div>
+                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Скоростно-силовые</span><b id="barSpeedStrengthVal">0%</b></div><div class="bar-track"><div id="barSpeedStrengthFill" class="bar-fill"></div></div></div>
+                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Гибкость</span><b id="barFlexVal">0%</b></div><div class="bar-track"><div id="barFlexFill" class="bar-fill bar-fill-green"></div></div></div>
+                        <div class="stat-bar-group"><div class="stat-bar-header"><span>Выносливость</span><b id="barEnduranceVal">0%</b></div><div class="bar-track"><div id="barEnduranceFill" class="bar-fill"></div></div></div>
+                    </div>
+
+                    <div class="dash-box">
+                        <h3 class="box-title">📏 Диагностическая карта</h3>
+                        <div class="info-row"><span>Рост:</span><b id="resHeightVal">-- см</b></div>
+                        <div class="info-row"><span>Прогноз роста:</span><b id="resTargetHeightVal">-- см</b></div>
+                        <div class="info-row"><span>Вес:</span><b id="resWeightVal">-- кг</b></div>
+                        <div class="info-row"><span>ИМТ:</span><b id="resBmiVal">--</b></div>
+                        <div class="info-row"><span>Реакция:</span><b id="resReactionVal">--</b></div>
+                        <div class="info-row"><span>Темперамент:</span><b id="resTemperamentVal">--</b></div>
+                        <div class="info-row"><span>Теппинг-тест:</span><b id="resTappingVal" style="font-size:11px; text-align:right;">--</b></div>
+                    </div>
+                </div>
+
+                <div class="dashboard-recommendations-section">
+                    <h3 class="section-title">📐 Совместимость с секциями Лангепаса</h3>
+                    <div id="recommendedGrid" class="cards-grid"></div>
+                </div>
+
+                <div class="dashboard-recommendations-section" style="margin-top: 14px;">
+                    <h3 class="section-title" style="color: #7c3aed;">🌐 Другие перспективные направления</h3>
+                    <div id="otherRecommendedGrid" class="cards-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>
