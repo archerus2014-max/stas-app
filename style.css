@@ -4,6 +4,7 @@
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
@@ -16,7 +17,7 @@ html, body {
 body {
     display: flex;
     justify-content: center;
-    padding: 10px;
+    padding: 8px;
 }
 
 .app-container {
@@ -34,7 +35,6 @@ body {
     display: none !important;
 }
 
-/* Шапка */
 .main-header {
     display: flex;
     justify-content: space-between;
@@ -57,13 +57,13 @@ body {
 }
 
 .header-titles h1 {
-    font-size: 16px;
+    font-size: 15.5px;
     font-weight: 700;
     color: #0f172a;
 }
 
 .subtitle {
-    font-size: 11.5px;
+    font-size: 11px;
     color: #64748b;
 }
 
@@ -77,21 +77,20 @@ body {
     white-space: nowrap;
 }
 
-/* Приветствие */
 .mascot-box {
     text-align: center;
     margin-bottom: 12px;
 }
 
 .mascot-img-large {
-    width: 115px;
-    height: 115px;
+    width: 110px;
+    height: 110px;
     object-fit: contain;
     margin-bottom: 8px;
 }
 
 .welcome-text h2 {
-    font-size: 18px;
+    font-size: 17.5px;
     margin-bottom: 6px;
     color: #0f172a;
 }
@@ -102,7 +101,31 @@ body {
     color: #475569;
 }
 
-/* Чекбокс выбора режима */
+/* Стили для блока предупреждения по 152-ФЗ */
+.fz152-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 12px;
+    margin: 12px 0;
+    font-size: 11.5px;
+    color: #475569;
+    line-height: 1.4;
+    text-align: left;
+}
+
+.fz152-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.fz152-notice b {
+    color: #0f172a;
+}
+
 .mode-checkbox-card {
     display: flex;
     align-items: center;
@@ -116,12 +139,7 @@ body {
     transition: all 0.2s ease;
 }
 
-.mode-checkbox-card:hover {
-    border-color: #0077ff;
-    background: #f0f7ff;
-}
-
-.mode-checkbox-card.active {
+.mode-checkbox-card:hover, .mode-checkbox-card.active {
     border-color: #0077ff;
     background: #eef6ff;
 }
@@ -136,7 +154,6 @@ body {
     justify-content: center;
     background: #fff;
     flex-shrink: 0;
-    transition: all 0.2s;
 }
 
 .mode-checkbox-card.active .custom-checkbox {
@@ -158,7 +175,6 @@ body {
 .checkbox-text {
     display: flex;
     flex-direction: column;
-    text-align: left;
 }
 
 .checkbox-text b {
@@ -171,7 +187,6 @@ body {
     color: #64748b;
 }
 
-/* Кнопки */
 .btn-primary {
     width: 100%;
     background: #0077ff;
@@ -182,7 +197,6 @@ body {
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
 }
 
 .btn-primary:active {
@@ -200,7 +214,6 @@ body {
     cursor: pointer;
 }
 
-/* Квиз */
 .progress-bar-container {
     margin-bottom: 14px;
 }
@@ -261,7 +274,6 @@ body {
     font-weight: 500;
     cursor: pointer;
     text-align: center;
-    transition: all 0.2s;
 }
 
 .select-card.active {
@@ -276,12 +288,6 @@ body {
     border: 1px solid #e2e8f0;
     border-radius: 10px;
     padding: 12px;
-}
-
-.normative-desc {
-    font-size: 12px;
-    color: #475569;
-    margin-bottom: 6px;
 }
 
 .normative-avg {
@@ -303,7 +309,6 @@ body {
     color: #64748b;
 }
 
-/* Компактные тесты */
 .compact-header {
     text-align: center;
     margin-bottom: 10px;
@@ -347,7 +352,6 @@ body {
     font-size: 24px;
     font-weight: 800;
     color: #0077ff;
-    line-height: 1;
 }
 
 .timer-label {
@@ -390,7 +394,6 @@ body {
     color: #0f172a;
 }
 
-/* Дашборд результатов */
 .dashboard-header-card {
     display: flex;
     justify-content: space-between;
@@ -451,7 +454,6 @@ body {
     cursor: pointer;
 }
 
-/* Заключение ИИ - аккуратная рамка без выхода за границы */
 .gigachat-card {
     background: #f0f7ff;
     border: 1.5px solid #bae6fd;
@@ -459,7 +461,6 @@ body {
     padding: 14px;
     margin-bottom: 14px;
     box-sizing: border-box;
-    width: 100%;
 }
 
 .gigachat-header {
@@ -489,7 +490,6 @@ body {
     margin-bottom: 0;
 }
 
-/* Сетка навыков */
 .dashboard-grid-2col {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -508,7 +508,6 @@ body {
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 10px;
-    box-sizing: border-box;
 }
 
 .box-title {
@@ -559,7 +558,7 @@ body {
     margin-bottom: 8px;
 }
 
-/* Рекомендации */
+/* Круглые диаграммы и карточки видов спорта */
 .recommendation-card {
     display: flex;
     align-items: center;
@@ -580,13 +579,19 @@ body {
 .card-left {
     width: 48px;
     height: 48px;
-    margin-right: 10px;
+    margin-right: 12px;
     flex-shrink: 0;
 }
 
+.circle-chart {
+    width: 100%;
+    height: 100%;
+}
+
 .circular-chart {
-    max-width: 100%;
-    max-height: 100%;
+    display: block;
+    width: 100%;
+    max-height: 48px;
 }
 
 .circle-bg {
@@ -599,13 +604,19 @@ body {
     fill: none;
     stroke-width: 3.8;
     stroke-linecap: round;
+    transition: stroke-dasharray 0.5s ease;
 }
 
 .percentage {
-    fill: #1e293b;
-    font-size: 9px;
-    font-weight: bold;
+    fill: #0f172a;
+    font-size: 9.5px;
+    font-weight: 700;
     text-anchor: middle;
+    font-family: inherit;
+}
+
+.card-right {
+    flex-grow: 1;
 }
 
 .rec-title {
@@ -618,15 +629,4 @@ body {
     font-size: 11px;
     color: #64748b;
     margin: 1px 0;
-}
-
-.disclaimer-note {
-    margin-top: 12px;
-    padding: 10px;
-    background: #fffbe0;
-    border: 1px solid #ffe58f;
-    border-radius: 8px;
-    font-size: 11px;
-    color: #855900;
-    text-align: center;
 }

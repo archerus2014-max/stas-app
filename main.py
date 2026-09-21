@@ -127,9 +127,7 @@ def extract_short_name(full_name: str) -> str:
     parts = full_name.strip().split()
     if not parts:
         return "Юный спортсмен"
-    if len(parts) >= 2:
-        return parts[1]
-    return parts[0]
+    return parts[0] # Берем только первое имя (минимизация ПДн по 152-ФЗ)
 
 def clean_sport_name(name: str) -> str:
     name = name.strip()
@@ -288,7 +286,7 @@ def ask_gigachat(prompt_text: str, credentials: str) -> Optional[str]:
                 "content": (
                     "Ты — Бельчонок СТАС, дружелюбный спортивный агент СШОР «Академия спорта» г. Лангепас. "
                     "Начинай текст СТРОГО с личного обращения только по ИМЕНИ (например: 'Юрий, ты большой молодец!' или 'Анна, ты большая умница!'). "
-                    "НИКОГДА не пиши фамилию в обращении или приветствии. "
+                    "НИКОГДА не пиши фамилию в обращении или приветствии (152-ФЗ). "
                     "НЕ ИСПОЛЬЗУЙ фразу 'Строго НАПРЯМУЮ'. Пиши структурированно, полностью завершай свои мысли "
                     "без обрыва предложений на полуслове. "
                     "Упоминай ТОЛЬКО ТЕ ВИДЫ СПОРТА, которые прямо переданы тебе в списке рекомендованных секций!"
@@ -440,7 +438,7 @@ async def analyze_athlete(payload: AthletePayload):
     gto_prompt_note = f"\n- Комплекс ГТО: По результатам ОФП претендует на: {gto_badge}." if gto_badge else ""
 
     user_prompt = (
-        f"Напиши личное обращение к ребенку по имени {short_name}.\n"
+        f"Напиши личное обращение к ребенку только по имени {short_name}.\n"
         f"Данные: Возраст {payload.age} лет, Рост {payload.height_cm} см, Вес {payload.weight_kg} кг, ИМТ {bmi}.\n"
         f"Сенсомоторная реакция: {payload.reaction_ms} мс, Нервная система: {payload.nerve_type}, Темперамент: {temp_str}.{gto_prompt_note}\n\n"
         f"ВАЖНО: Начни ответ СТРОГО по имени: '{short_name}, ты большой молодец!' (или 'большая умница'). Не используй фамилию!\n"
@@ -469,7 +467,6 @@ async def analyze_athlete(payload: AthletePayload):
         "other_top_sports": other_top_sports
     })
 
-# Точный абсолютный путь для гарантированной отдачи фронтенда
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INDEX_FILE = os.path.join(BASE_DIR, "index.html")
 
