@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Спортивный агент СТАС</title>
-  <script type="module" crossorigin src="./assets/index-CHBhvB86.js"></script>
+  <script type="module" crossorigin src="./assets/index-DKJEEEVY.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-B6s8E6kA.css">
 </head>
 <body>
@@ -48,6 +48,17 @@
                 </div>
             </div>
 
+            <!-- Галочка расширенного режима (появляется только для ребёнка) -->
+            <div class="mode-checkbox-card hidden" id="normsCard">
+                <div class="custom-checkbox" id="normsCheckbox">
+                    <span class="checkmark">✓</span>
+                </div>
+                <div class="checkbox-text">
+                    <b>Расширенный режим ОФП</b>
+                    <span>Я знаю результаты нормативов (подтягивания, наклон, бег, прыжок и т.д.)</span>
+                </div>
+            </div>
+
             <button type="button" class="btn-primary" id="startBtn" disabled>Выберите режим</button>
         </div>
 
@@ -63,7 +74,7 @@
             </div>
         </div>
 
-        <!-- ЭКРАН 3: Реакция (только для детей) -->
+        <!-- ЭКРАН 3: Реакция -->
         <div id="reactionScreen" class="card-screen hidden">
             <div class="compact-header">
                 <h2>⚡ Тест на сенсомоторную реакцию</h2>
@@ -75,7 +86,7 @@
             <button type="button" id="startReactionBtn" class="btn-primary">🚀 НАЧАТЬ ТЕСТ РЕАКЦИИ</button>
         </div>
 
-        <!-- ЭКРАН 4: Теппинг-тест (только для детей) -->
+        <!-- ЭКРАН 4: Теппинг-тест -->
         <div id="tappingScreen" class="card-screen hidden">
             <div class="compact-header">
                 <h2>⏱️ Тест Ильина (6 квадратов)</h2>

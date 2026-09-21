@@ -8,7 +8,7 @@ bridge.send("VKWebAppInit")
     .catch((err) => console.log("VK Bridge Init:", err));
 
 // ====================== СОСТОЯНИЕ ======================
-let currentMode = null; // 'child' | 'adult'
+let currentMode = null;
 let currentQuizStep = 0;
 let activeQuizQuestions = [];
 let useNormsMode = false;
@@ -31,8 +31,6 @@ let userAnswers = {
     sex: "female",
     height_cm: 165,
     weight_kg: 65,
-
-    // детский режим
     birth_date: "15.05.2016",
     father_height_cm: 178,
     mother_height_cm: 165,
@@ -48,8 +46,6 @@ let userAnswers = {
     temperament: "sanguine",
     reaction_ms: 300,
     tapping_test: { nerve_type: "Стабильная НС", curve_type: "Ровный тип", count: 150 },
-
-    // взрослый режим
     complaints: {
         back: false, joints: false, pressure: false,
         headache: false, heart: false, dyspnea: false,
@@ -70,7 +66,7 @@ const skillOptions = [
 const childBaseQuestions = [
     { title: "Имя ребенка", field: "first_name", type: "text", placeholder: "Например: Иван" },
     { title: "Дата рождения (ДД.ММ.ГГГГ)", field: "birth_date", type: "date_text", placeholder: "15.05.2016" },
-    { title: "Пол ребенка", field: "sex", type: "gender_cards" },
+    { title: "Пол ребенка", field: "sex", type: "gender_cards_child" },
     { title: "Рост ребенка (см)", field: "height_cm", type: "number", default: 125 },
     { title: "Вес ребенка (кг)", field: "weight_kg", type: "number", default: 25 },
     { title: "Рост отца (см)", field: "father_height_cm", type: "number", default: 178 },
@@ -109,7 +105,7 @@ const finalChildQuestions = [
 const adultQuestions = [
     { title: "Ваше имя (или как к вам обращаться)", field: "first_name", type: "text", placeholder: "Например: Алексей" },
     { title: "Ваш возраст", field: "age", type: "number", default: 35 },
-    { title: "Пол", field: "sex", type: "gender_cards" },
+    { title: "Пол", field: "sex", type: "gender_cards_adult" },
     { title: "Рост (см)", field: "height_cm", type: "number", default: 170 },
     { title: "Вес (кг)", field: "weight_kg", type: "number", default: 70 },
     { title: "Есть ли у вас жалобы?", field: "complaints", type: "multi_check", options: [
@@ -186,18 +182,17 @@ document.getElementById("modeAdult")?.addEventListener("click", () => {
 
 document.getElementById("normsCard")?.addEventListener("click", () => {
     useNormsMode = !useNormsMode;
-    document.getElementById("normsCard").classList.toggle("active", useNormsMode);
+    const card = document.getElementById("normsCard");
+    if (card) card.classList.toggle("active", useNormsMode);
 });
 
 document.getElementById("startBtn")?.addEventListener("click", () => {
     if (!currentMode) return;
 
     if (currentMode === "child") {
-        if (useNormsMode) {
-            activeQuizQuestions = [...childBaseQuestions, ...normativesQuestions, ...finalChildQuestions];
-        } else {
-            activeQuizQuestions = [...childBaseQuestions, ...physicalQuestions, ...finalChildQuestions];
-        }
+        activeQuizQuestions = useNormsMode
+            ? [...childBaseQuestions, ...normativesQuestions, ...finalChildQuestions]
+            : [...childBaseQuestions, ...physicalQuestions, ...finalChildQuestions];
     } else {
         activeQuizQuestions = [...adultQuestions];
     }
@@ -213,13 +208,8 @@ function showScreen(screenId) {
     screens.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            if (id === screenId) {
-                el.classList.remove("hidden");
-                el.style.display = "block";
-            } else {
-                el.classList.add("hidden");
-                el.style.display = "none";
-            }
+            el.classList.toggle("hidden", id !== screenId);
+            el.style.display = id === screenId ? "block" : "none";
         }
     });
     window.scrollTo(0, 0);
@@ -252,12 +242,20 @@ function renderQuestion() {
                     <span class="normative-unit">${q.unit}</span>
                 </div>
             </div>`;
-    } else if (q.type === "gender_cards") {
+    } else if (q.type === "gender_cards_child") {
         const activeSex = userAnswers.sex || "female";
         inputHtml = `
             <div class="cards-select-grid">
-                <div class="select-card ${activeSex === 'female' ? 'active' : ''}" data-val="female">👧 Девочка / Женский</div>
-                <div class="select-card ${activeSex === 'male' ? 'active' : ''}" data-val="male">👦 Мальчик / Мужской</div>
+                <div class="select-card ${activeSex === 'female' ? 'active' : ''}" data-val="female">👧 Девочка</div>
+                <div class="select-card ${activeSex === 'male' ? 'active' : ''}" data-val="male">👦 Мальчик</div>
+            </div>
+            <input type="hidden" id="quizInput" value="${activeSex}">`;
+    } else if (q.type === "gender_cards_adult") {
+        const activeSex = userAnswers.sex || "female";
+        inputHtml = `
+            <div class="cards-select-grid">
+                <div class="select-card ${activeSex === 'female' ? 'active' : ''}" data-val="female">👩 Женщина</div>
+                <div class="select-card ${activeSex === 'male' ? 'active' : ''}" data-val="male">👨 Мужчина</div>
             </div>
             <input type="hidden" id="quizInput" value="${activeSex}">`;
     } else if (q.type === "cards_skill") {
@@ -356,9 +354,7 @@ function nextStep() {
         renderQuestion();
     } else {
         if (currentMode === "child") {
-            if (useNormsMode) {
-                calculatePhysicalFromNorms();
-            }
+            if (useNormsMode) calculatePhysicalFromNorms();
             showScreen("reactionScreen");
             resetReactionUI();
         } else {
@@ -378,34 +374,19 @@ document.getElementById("prevBtn")?.addEventListener("click", () => {
     }
 });
 
-// ====================== ПЕРЕСЧЁТ ИЗ НОРМАТИВОВ ======================
 function calculatePhysicalFromNorms() {
     const n = userAnswers.normatives;
-
-    const strength = Math.min(10, Math.max(1, Math.round(
-        (n.pullups / 3) * 4 + (n.pushups / 15) * 4 + (n.situps / 35) * 2
-    )));
+    const strength = Math.min(10, Math.max(1, Math.round((n.pullups / 3) * 4 + (n.pushups / 15) * 4 + (n.situps / 35) * 2)));
     const flexibility = Math.min(10, Math.max(1, Math.round((n.flexibility_cm / 12) * 8 + 2)));
     const endurance = Math.min(10, Math.max(1, Math.round((n.situps / 35) * 7 + (n.pushups / 15) * 3)));
     const speed_strength = Math.min(10, Math.max(1, Math.round((n.long_jump_cm / 160) * 8 + 2)));
-    const speedVal = n.run_30m_sec > 0
-        ? Math.min(10, Math.max(1, Math.round((5.0 / n.run_30m_sec) * 8 + 2)))
-        : 6;
-    const coordination = Math.min(10, Math.max(1, Math.round(
-        (n.target_throw / 5) * 6 + (8.5 / (n.shuttle_run_sec || 9)) * 4
-    )));
+    const speedVal = n.run_30m_sec > 0 ? Math.min(10, Math.max(1, Math.round((5.0 / n.run_30m_sec) * 8 + 2))) : 6;
+    const coordination = Math.min(10, Math.max(1, Math.round((n.target_throw / 5) * 6 + (8.5 / (n.shuttle_run_sec || 9)) * 4)));
 
-    userAnswers.physical = {
-        speed: speedVal,
-        strength,
-        coordination,
-        speed_strength,
-        flexibility,
-        endurance
-    };
+    userAnswers.physical = { speed: speedVal, strength, coordination, speed_strength, flexibility, endurance };
 }
 
-// ====================== ТЕСТ РЕАКЦИИ ======================
+// ====================== ТЕСТЫ ДЕТЕЙ ======================
 function resetReactionUI() {
     if (reactionTimer) clearTimeout(reactionTimer);
     reactionStartTime = 0;
@@ -426,7 +407,6 @@ document.getElementById("startReactionBtn")?.addEventListener("click", () => {
     prompt.textContent = "Ждите зеленый цвет...";
     reactionActive = true;
     reactionStartTime = 0;
-
     const delay = Math.floor(Math.random() * 2500) + 1500;
     reactionTimer = setTimeout(() => {
         box.style.background = "#52c41a";
@@ -440,7 +420,6 @@ document.getElementById("reactionBox")?.addEventListener("click", () => {
     const box = document.getElementById("reactionBox");
     const prompt = document.getElementById("reactionPrompt");
     const btn = document.getElementById("startReactionBtn");
-
     if (!reactionStartTime) {
         clearTimeout(reactionTimer);
         reactionActive = false;
@@ -449,27 +428,23 @@ document.getElementById("reactionBox")?.addEventListener("click", () => {
         btn.style.display = "inline-block";
         return;
     }
-
     const diff = Date.now() - reactionStartTime;
     userAnswers.reaction_ms = diff;
     reactionActive = false;
     box.style.background = "#0077ff";
     prompt.textContent = `Время реакции: ${diff} мс!`;
-
     setTimeout(() => {
         showScreen("tappingScreen");
         resetTappingUI();
     }, 1000);
 });
 
-// ====================== ТЕППИНГ-ТЕСТ ======================
 function resetTappingUI() {
     if (tappingTimer) clearInterval(tappingTimer);
     squareCounts = [0, 0, 0, 0, 0, 0];
     currentSquare = 1;
     tappingTimeLeft = 30;
     tappingActive = false;
-
     for (let i = 1; i <= 6; i++) {
         const sq = document.getElementById(`sq${i}`);
         const cnt = document.getElementById(`sqCount${i}`);
@@ -485,7 +460,6 @@ document.getElementById("startTapBtn")?.addEventListener("click", () => {
     resetTappingUI();
     tappingActive = true;
     document.getElementById("startTapBtn").style.display = "none";
-
     tappingTimer = setInterval(() => {
         tappingTimeLeft--;
         document.getElementById("tapTimer").textContent = tappingTimeLeft;
@@ -498,7 +472,6 @@ document.getElementById("startTapBtn")?.addEventListener("click", () => {
             document.getElementById("currentSquareNum").textContent = currentSquare;
             if (navigator.vibrate) navigator.vibrate(60);
         }
-
         if (tappingTimeLeft <= 0) {
             clearInterval(tappingTimer);
             tappingActive = false;
@@ -523,18 +496,10 @@ function finishTapping() {
     const [N1, N2, N3] = squareCounts;
     let type = "Ровный тип";
     let nerveType = "Средняя сила НС";
+    if (Math.max(N2, N3) > N1) { type = "Выпуклый тип"; nerveType = "Сильная НС"; }
+    else if (N2 < N1 && N3 <= N2) { type = "Нисходящий тип"; nerveType = "Слабая НС"; }
 
-    if (Math.max(N2, N3) > N1) {
-        type = "Выпуклый тип"; nerveType = "Сильная НС";
-    } else if (N2 < N1 && N3 <= N2) {
-        type = "Нисходящий тип"; nerveType = "Слабая НС";
-    }
-
-    userAnswers.tapping_test = {
-        nerve_type: `${nerveType} (${type})`,
-        curve_type: type,
-        count: total
-    };
+    userAnswers.tapping_test = { nerve_type: `${nerveType} (${type})`, curve_type: type, count: total };
 
     showScreen("resultsScreen");
     document.getElementById("childResultsBlock").classList.remove("hidden");
@@ -558,12 +523,8 @@ function calculateAge(birthDateString) {
 
 function formatAiText(text) {
     if (!text) return "";
-    return text
-        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-        .replace(/\*/g, '')
-        .split('\n\n')
-        .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
-        .join('');
+    return text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*/g, '')
+        .split('\n\n').map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
 }
 
 async function sendDataToBackend() {
@@ -601,10 +562,7 @@ async function sendDataToBackend() {
         });
         const data = await res.json();
         lastAnalysisResult = data;
-
-        if (aiTextEl && data.ai_text) {
-            aiTextEl.innerHTML = formatAiText(data.ai_text);
-        }
+        if (aiTextEl && data.ai_text) aiTextEl.innerHTML = formatAiText(data.ai_text);
         renderChildDashboard(data);
     } catch (e) {
         if (aiTextEl) aiTextEl.innerHTML = "<p style='color:red;'>Ошибка связи с сервером.</p>";
@@ -648,10 +606,7 @@ function renderChildDashboard(data) {
     document.getElementById("resReactionVal").textContent = `${userAnswers.reaction_ms} мс`;
     document.getElementById("resTemperamentVal").textContent = temperamentRu[userAnswers.temperament] || userAnswers.temperament;
     document.getElementById("resTappingVal").textContent = userAnswers.tapping_test.nerve_type;
-
-    if (data.predicted_adult_height) {
-        document.getElementById("resTargetHeightVal").textContent = `${data.predicted_adult_height} см`;
-    }
+    if (data.predicted_adult_height) document.getElementById("resTargetHeightVal").textContent = `${data.predicted_adult_height} см`;
 
     const gridEl = document.getElementById("recommendedGrid");
     if (gridEl && data.top_sports) {
@@ -684,8 +639,8 @@ function renderChildDashboard(data) {
     }
 }
 
-// ====================== РЕЗУЛЬТАТЫ ВЗРОСЛЫХ ======================
-function processAdultResults() {
+// ====================== РЕЗУЛЬТАТЫ ВЗРОСЛЫХ (через GigaChat) ======================
+async function processAdultResults() {
     const nameEl = document.getElementById("resName");
     const subEl = document.getElementById("resSub");
     const aiTextEl = document.getElementById("resAiText");
@@ -695,113 +650,65 @@ function processAdultResults() {
     const name = userAnswers.first_name.trim() || "Друг";
     if (nameEl) nameEl.textContent = name;
     if (subEl) subEl.textContent = `${userAnswers.age} лет | ${userAnswers.height_cm} см | ${userAnswers.weight_kg} кг`;
+    if (aiTextEl) aiTextEl.innerHTML = "<p style='color:#0077ff;font-weight:bold;'>Бельчонок СТАС готовит персональные рекомендации...</p>";
 
-    const complaintsList = [];
-    if (userAnswers.complaints.back) complaintsList.push("боли в спине");
-    if (userAnswers.complaints.joints) complaintsList.push("проблемы с суставами");
-    if (userAnswers.complaints.pressure) complaintsList.push("давление");
-    if (userAnswers.complaints.headache) complaintsList.push("головные боли");
-    if (userAnswers.complaints.heart || userAnswers.complaints.dyspnea) complaintsList.push("проблемы с сердцем/одышка");
-    if (userAnswers.complaints.overweight) complaintsList.push("лишний вес");
+    const payload = {
+        full_name: name,
+        age: parseInt(userAnswers.age),
+        sex: userAnswers.sex,
+        height_cm: parseFloat(userAnswers.height_cm),
+        weight_kg: parseFloat(userAnswers.weight_kg),
+        complaints: userAnswers.complaints,
+        activity_level: userAnswers.activity_level,
+        goals: userAnswers.goals
+    };
 
-    let aiText = `${name}, спасибо, что уделил(а) время своему здоровью!\n\n`;
-    if (complaintsList.length > 0) {
-        aiText += `Я учёл твои жалобы: ${complaintsList.join(", ")}. `;
-    } else {
-        aiText += `Отлично, что серьёзных жалоб нет. `;
-    }
-    aiText += `На основе возраста, уровня активности и целей я подобрал безопасные рекомендации.\n\n`;
-    aiText += `Важно: при хронических заболеваниях или сильных болях обязательно проконсультируйся с врачом.`;
+    try {
+        const res = await fetch(`${API_URL}/api/analyze-adult`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
 
-    if (aiTextEl) aiTextEl.innerHTML = formatAiText(aiText);
+        if (aiTextEl && data.ai_text) {
+            aiTextEl.innerHTML = formatAiText(data.ai_text);
+        }
 
-    if (healthSummary) {
-        healthSummary.innerHTML = `
-            <div class="info-row"><span>Возраст:</span><b>${userAnswers.age} лет</b></div>
-            <div class="info-row"><span>ИМТ:</span><b>${(userAnswers.weight_kg / Math.pow(userAnswers.height_cm / 100, 2)).toFixed(1)}</b></div>
-            <div class="info-row"><span>Активность:</span><b>${userAnswers.activity_level === 'low' ? 'Низкая' : userAnswers.activity_level === 'medium' ? 'Средняя' : 'Высокая'}</b></div>
-            <div class="info-row"><span>Жалобы:</span><b>${complaintsList.length ? complaintsList.join(", ") : "нет"}</b></div>
-        `;
-    }
+        if (healthSummary) {
+            const complaintsText = Object.entries(userAnswers.complaints)
+                .filter(([k, v]) => v && k !== "none")
+                .map(([k]) => {
+                    const map = { back: "спина", joints: "суставы", pressure: "давление", headache: "головные боли", heart: "сердце", dyspnea: "одышка", overweight: "лишний вес" };
+                    return map[k] || k;
+                }).join(", ") || "нет";
 
-    const recommendations = generateAdultRecommendations();
-    if (recGrid) {
-        recGrid.innerHTML = recommendations.map(item => `
-            <div class="recommendation-card" style="border-left-color: ${item.color};">
-                <div class="card-left" style="font-size:28px;display:flex;align-items:center;justify-content:center;">${item.icon}</div>
-                <div class="card-right">
-                    <h4 class="rec-title">${item.title}</h4>
-                    <p class="rec-note">${item.desc}</p>
+            healthSummary.innerHTML = `
+                <div class="info-row"><span>Возраст:</span><b>${userAnswers.age} лет</b></div>
+                <div class="info-row"><span>ИМТ:</span><b>${data.bmi || "-"}</b></div>
+                <div class="info-row"><span>Активность:</span><b>${userAnswers.activity_level === 'low' ? 'Низкая' : userAnswers.activity_level === 'medium' ? 'Средняя' : 'Высокая'}</b></div>
+                <div class="info-row"><span>Жалобы:</span><b>${complaintsText}</b></div>
+            `;
+        }
+
+        if (recGrid && data.recommendations) {
+            recGrid.innerHTML = data.recommendations.map(item => `
+                <div class="recommendation-card" style="border-left-color: ${item.color || '#0077ff'};">
+                    <div class="card-left" style="font-size:28px;display:flex;align-items:center;justify-content:center;">${item.icon || '✅'}</div>
+                    <div class="card-right">
+                        <h4 class="rec-title">${item.title}</h4>
+                        <p class="rec-note">${item.desc}</p>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
+        }
+    } catch (e) {
+        if (aiTextEl) aiTextEl.innerHTML = "<p style='color:red;'>Ошибка связи с сервером. Попробуйте позже.</p>";
     }
-}
-
-function generateAdultRecommendations() {
-    const recs = [];
-    const c = userAnswers.complaints;
-    const goals = userAnswers.goals || [];
-
-    recs.push({
-        icon: "🚶",
-        title: "Ежедневная ходьба",
-        desc: "30–60 минут в комфортном темпе. Лучший старт для любого уровня.",
-        color: "#10b981"
-    });
-
-    if (c.back || goals.includes("back")) {
-        recs.push({
-            icon: "🧘",
-            title: "ЛФК и укрепление кора",
-            desc: "Упражнения на мышцы спины и живота без осевой нагрузки.",
-            color: "#f59e0b"
-        });
-    }
-
-    if (c.joints || c.overweight || goals.includes("weight")) {
-        recs.push({
-            icon: "🏊",
-            title: "Плавание / аквааэробика",
-            desc: "Разгружает суставы и позвоночник, сжигает калории.",
-            color: "#0077ff"
-        });
-    }
-
-    if (c.pressure || c.headache || goals.includes("stress")) {
-        recs.push({
-            icon: "🌲",
-            title: "Скандинавская ходьба",
-            desc: "Снижает давление, улучшает настроение, прорабатывает 90% мышц.",
-            color: "#7c3aed"
-        });
-    }
-
-    if (goals.includes("endurance") || userAnswers.activity_level === "low") {
-        recs.push({
-            icon: "🚴",
-            title: "Велосипед / эллипс",
-            desc: "Мягкая кардионагрузка. Начинай с 20–30 минут 3 раза в неделю.",
-            color: "#0ea5e9"
-        });
-    }
-
-    if (recs.length < 3) {
-        recs.push({
-            icon: "🏋️",
-            title: "Силовые с собственным весом",
-            desc: "Приседания, отжимания, планка. 2–3 раза в неделю.",
-            color: "#64748b"
-        });
-    }
-
-    return recs.slice(0, 5);
 }
 
 // ====================== PDF и ПЕРЕЗАПУСК ======================
-document.getElementById("downloadPdfBtn")?.addEventListener("click", () => {
-    window.print();
-});
+document.getElementById("downloadPdfBtn")?.addEventListener("click", () => window.print());
 
 document.getElementById("restartBtn")?.addEventListener("click", () => {
     currentMode = null;

@@ -125,7 +125,7 @@ body {
     color: #0f172a;
 }
 
-/* ===== MODE CARDS (новый блок) ===== */
+/* ===== MODE CARDS & CHECKBOX ===== */
 .mode-cards {
     display: flex;
     flex-direction: column;
@@ -173,7 +173,68 @@ body {
     line-height: 1.3;
 }
 
-/* ===== BUTTONS ===== */
+.mode-checkbox-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8fafc;
+    border: 2px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 12px;
+    margin: 14px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mode-checkbox-card:hover, .mode-checkbox-card.active {
+    border-color: #0077ff;
+    background: #eef6ff;
+}
+
+.custom-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #94a3b8;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.mode-checkbox-card.active .custom-checkbox {
+    background: #0077ff;
+    border-color: #0077ff;
+}
+
+.checkmark {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
+    display: none;
+}
+
+.mode-checkbox-card.active .checkmark {
+    display: block;
+}
+
+.checkbox-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.checkbox-text b {
+    font-size: 13.5px;
+    color: #0f172a;
+}
+
+.checkbox-text span {
+    font-size: 11.5px;
+    color: #64748b;
+}
+
+/* ===== BUTTON्स ===== */
 .btn-primary {
     width: 100%;
     background: #0077ff;

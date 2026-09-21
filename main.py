@@ -48,7 +48,8 @@ FEMALE_ONLY_SPORTS = [
 EXCLUDED_SPORTS = [
     "авиамодельный", "автомобильный", "авиационные гонки", "мотоциклетный",
     "радиоспорт", "судомодельный", "ракетомодельный", "компьютерный",
-    "пожарно-спасательный", "морское многоборье", "боулинг", "гольф", "шашки"
+    "пожарно-спасательный", "морское многоборье", "боулинг", "гольф", "шашки",
+    "зимнее плавание"
 ]
 
 # ====================== МОДЕЛИ ======================
@@ -91,8 +92,8 @@ class AdultPayload(BaseModel):
     height_cm: float
     weight_kg: float
     complaints: Dict[str, bool]
-    activity_level: str = "low"          # low | medium | high
-    goals: List[str] = []                # weight, back, endurance, stress, general
+    activity_level: str = "low"
+    goals: List[str] = []
 
 # ====================== GIGACHAT ======================
 def get_gigachat_token(credentials: str) -> Optional[str]:
@@ -323,7 +324,6 @@ async def vk_callback_handler(request: Request):
 
 @app.post("/api/analyze")
 async def analyze_athlete(payload: AthletePayload):
-    """Детский режим (с поддержкой нормативов ОФП)"""
     gender_coef = 6.5 if payload.sex == "male" else -6.5
     predicted_height = round(((payload.father_height_cm + payload.mother_height_cm) / 2) + gender_coef, 1)
 
@@ -395,86 +395,88 @@ async def analyze_athlete(payload: AthletePayload):
 
 @app.post("/api/analyze-adult")
 async def analyze_adult(payload: AdultPayload):
-    """Взрослый режим — здоровье и физкультура"""
+    """Взрослый режим — индивидуальный подбор с учётом жалоб и целей"""
     height_m = payload.height_cm / 100.0
     bmi = round(payload.weight_kg / (height_m * height_m), 1)
 
     complaints_list = []
-    if payload.complaints.get("back"): complaints_list.append("боли в спине")
+    if payload.complaints.get("back"): complaints_list.append("боли в спине и пояснице")
     if payload.complaints.get("joints"): complaints_list.append("проблемы с суставами")
-    if payload.complaints.get("pressure"): complaints_list.append("давление")
-    if payload.complaints.get("headache"): complaints_list.append("головные боли")
+    if payload.complaints.get("pressure"): complaints_list.append("скачки артериального давления")
+    if payload.complaints.get("headache"): complaints_list.append("частые головные боли")
     if payload.complaints.get("heart") or payload.complaints.get("dyspnea"):
-        complaints_list.append("проблемы с сердцем / одышка")
-    if payload.complaints.get("overweight"): complaints_list.append("лишний вес")
+        complaints_list.append("одышка или дискомфорт в сердце")
+    if payload.complaints.get("overweight"): complaints_list.append("избыточный вес")
 
     goals_map = {
-        "weight": "снижение веса",
-        "back": "укрепление спины",
-        "endurance": "повышение выносливости",
-        "stress": "снятие стресса",
-        "general": "поддержание здоровья"
+        "weight": "снижение веса и коррекция фигуры",
+        "back": "укрепление мышечного корсета спины",
+        "endurance": "повышение общей выносливости",
+        "stress": "снятие стресса и улучшение сна",
+        "general": "поддержание общего тонуса и здоровья"
     }
     goals_str = ", ".join([goals_map.get(g, g) for g in payload.goals]) or "общее оздоровление"
 
     activity_map = {
-        "low": "низкий",
-        "medium": "средний",
-        "high": "высокий"
+        "low": "низкий (малоподвижный образ жизни)",
+        "medium": "умеренный (пешие прогулки, редкая активность)",
+        "high": "высокий (регулярные тренировки)"
     }
     activity_str = activity_map.get(payload.activity_level, "низкий")
 
     short_name = extract_short_name(payload.full_name)
+    sex_word = "уважаемая" if payload.sex == "female" else "уважаемый"
 
     system_prompt = (
-        "Ты — Бельчонок СТАС, дружелюбный и заботливый спортивный агент. "
-        "Ты помогаешь взрослым безопасно заниматься физической культурой. "
-        "Начинай строго с обращения по имени. Пиши тепло, по делу, без лишней воды. "
-        "Всегда напоминай о необходимости консультации врача при жалобах."
+        "Ты — Бельчонок СТАС, дружелюбный и заботливый спортивный агент СШОР «Академия спорта». "
+        "Ты помогаешь взрослым подбирать безопасные нагрузки для здоровья. "
+        "Начинай строго с обращения по имени. Пиши аргументировано, опираясь на указанные жалобы и цели. "
+        "Обязательно добавляй мягкое предостережение о консультации с врачом при наличии жалоб."
     )
 
     user_prompt = (
-        f"Обратись к человеку по имени {short_name}.\n"
-        f"Возраст: {payload.age} лет, пол: {payload.sex}, рост: {payload.height_cm} см, вес: {payload.weight_kg} кг, ИМТ: {bmi}.\n"
-        f"Жалобы: {', '.join(complaints_list) if complaints_list else 'нет серьёзных'}.\n"
+        f"Обратись к пользователю по имени {short_name} ({sex_word}).\n"
+        f"Возраст: {payload.age} лет, рост: {payload.height_cm} см, вес: {payload.weight_kg} кг, ИМТ: {bmi}.\n"
         f"Уровень активности: {activity_str}.\n"
-        f"Цели: {goals_str}.\n\n"
-        f"Напиши короткое персональное заключение (8–12 предложений): "
-        f"похвали за внимание к здоровью, учти жалобы, предложи 3–4 безопасных вида активности "
-        f"(ходьба, скандинавская ходьба, плавание, ЛФК, велосипед и т.д.) и дай общий совет."
+        f"Жалобы и особенности здоровья: {', '.join(complaints_list) if complaints_list else 'нет выраженных жалоб'}.\n"
+        f"Цели занятий: {goals_str}.\n\n"
+        f"Напиши персональное развёрнутое заключение (10–14 предложений): "
+        f"проанализируй текущий ИМТ и жалобы, похвали за стремление заниматься физкультурой, "
+        f"предложи оптимальные и безопасные направления (ходьба, плавание, ЛФК, скандинавская ходьба и т.д.) "
+        f"с учётом индивидуальных ограничений."
     )
 
     ai_summary = ask_gigachat(user_prompt, system_prompt, GIGACHAT_CREDENTIALS)
 
     if not ai_summary:
         ai_summary = (
-            f"{short_name}, спасибо, что думаешь о своём здоровье! "
-            f"С учётом возраста и целей я рекомендую начать с регулярной ходьбы и "
-            f"{'плавания или скандинавской ходьбы' if complaints_list else 'лёгких силовых упражнений с собственным весом'}. "
-            f"При наличии жалоб обязательно проконсультируйся с врачом перед началом занятий."
+            f"{short_name}, спасибо, что уделяешь внимание своему здоровью! "
+            f"С учётом твоих целей ({goals_str}) и текущего уровня активности я подобрал индивидуальный комплекс нагрузок, "
+            f"который поможет укрепить организм без перегрузок. "
+            f"{'При наличии жалоб обязательно проконсультируйся с врачом перед началом занятий.' if complaints_list else 'Начинай постепенно и следи за самочувствием.'}"
         )
 
-    # Формируем рекомендации
+    # Динамическое формирование рекомендаций на основе жалоб и целей
     recommendations = []
     recommendations.append({
-        "title": "Ежедневная ходьба",
-        "desc": "30–60 минут в комфортном темпе — лучший старт.",
+        "title": "Дозированная ходьба",
+        "desc": "30–45 минут ежедневно в умеренном темпе. Улучшает обмен веществ и работу сердца.",
         "icon": "🚶",
         "color": "#10b981"
     })
 
     if payload.complaints.get("back") or "back" in payload.goals:
         recommendations.append({
-            "title": "ЛФК и укрепление кора",
-            "desc": "Упражнения без осевой нагрузки на позвоночник.",
+            "title": "Лечебная физкультура (ЛФК) и кора",
+            "desc": "Специальные комплексы на укрепление глубоких мышц спины без ударной и осевой нагрузки.",
             "icon": "🧘",
             "color": "#f59e0b"
         })
 
     if payload.complaints.get("joints") or payload.complaints.get("overweight") or "weight" in payload.goals:
         recommendations.append({
-            "title": "Плавание / аквааэробика",
-            "desc": "Разгружает суставы и отлично сжигает калории.",
+            "title": "Плавание и аквааэробика",
+            "desc": "Идеально разгружает суставы и позвоночник, эффективно сжигает калории.",
             "icon": "🏊",
             "color": "#0077ff"
         })
@@ -482,17 +484,25 @@ async def analyze_adult(payload: AdultPayload):
     if payload.complaints.get("pressure") or payload.complaints.get("headache") or "stress" in payload.goals:
         recommendations.append({
             "title": "Скандинавская ходьба",
-            "desc": "Снижает давление и прорабатывает почти всё тело.",
+            "desc": "Задействует до 90% мышц тела, снижает артериальное давление и снимает стресс.",
             "icon": "🌲",
             "color": "#7c3aed"
         })
 
-    if len(recommendations) < 3:
+    if len(recommendations) < 4 and ("endurance" in payload.goals or payload.activity_level == "low"):
         recommendations.append({
-            "title": "Велосипед или эллипс",
-            "desc": "Мягкая кардионагрузка 20–40 минут 3 раза в неделю.",
+            "title": "Эллиптический тренажер / Велосипед",
+            "desc": "Мягкая кардионагрузка для развития выносливости в комфортном темпе.",
             "icon": "🚴",
             "color": "#0ea5e9"
+        })
+
+    if len(recommendations) < 4:
+        recommendations.append({
+            "title": "Суставная гимнастика и растяжка",
+            "desc": "Комплекс упражнений на мобильность суставов и эластичность связок.",
+            "icon": "🤸",
+            "color": "#64748b"
         })
 
     return JSONResponse(content={
