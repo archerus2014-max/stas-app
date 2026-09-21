@@ -395,9 +395,23 @@ async def analyze_athlete(payload: AthletePayload):
 
 @app.post("/api/analyze-adult")
 async def analyze_adult(payload: AdultPayload):
-    """Взрослый режим — индивидуальный подбор с учётом жалоб и целей"""
+    """Взрослый режим — научный анализ ИМТ по ВОЗ, жалоб и физкультура"""
     height_m = payload.height_cm / 100.0
     bmi = round(payload.weight_kg / (height_m * height_m), 1)
+
+    # Научная оценка ИМТ по ВОЗ
+    if bmi < 18.5:
+        bmi_status = "Дефицит массы тела"
+    elif 18.5 <= bmi < 25.0:
+        bmi_status = "Нормальная масса тела"
+    elif 25.0 <= bmi < 30.0:
+        bmi_status = "Избыточная масса тела (предожирение)"
+    elif 30.0 <= bmi < 35.0:
+        bmi_status = "Ожирение I степени"
+    elif 35.0 <= bmi < 40.0:
+        bmi_status = "Ожирение II степени"
+    else:
+        bmi_status = "Ожирение III степени (морбидное)"
 
     complaints_list = []
     if payload.complaints.get("back"): complaints_list.append("боли в спине и пояснице")
@@ -406,7 +420,8 @@ async def analyze_adult(payload: AdultPayload):
     if payload.complaints.get("headache"): complaints_list.append("частые головные боли")
     if payload.complaints.get("heart") or payload.complaints.get("dyspnea"):
         complaints_list.append("одышка или дискомфорт в сердце")
-    if payload.complaints.get("overweight"): complaints_list.append("избыточный вес")
+    if payload.complaints.get("overweight") or bmi >= 25.0:
+        complaints_list.append(f"лишний вес (ИМТ {bmi} — {bmi_status})")
 
     goals_map = {
         "weight": "снижение веса и коррекция фигуры",
@@ -429,21 +444,21 @@ async def analyze_adult(payload: AdultPayload):
 
     system_prompt = (
         "Ты — Бельчонок СТАС, дружелюбный и заботливый спортивный агент СШОР «Академия спорта». "
-        "Ты помогаешь взрослым подбирать безопасные нагрузки для здоровья. "
-        "Начинай строго с обращения по имени. Пиши аргументировано, опираясь на указанные жалобы и цели. "
-        "Обязательно добавляй мягкое предостережение о консультации с врачом при наличии жалоб."
+        "Ты помогаешь взрослым подбирать безопасные нагрузки с учетом индекса массы тела (ИМТ) по ВОЗ. "
+        "Начинай строго с обращения по имени. Давай научно обоснованные, но простые и мотивирующие советы. "
+        "Обязательно учитывай статус ИМТ и сопутствующие жалобы."
     )
 
     user_prompt = (
         f"Обратись к пользователю по имени {short_name} ({sex_word}).\n"
-        f"Возраст: {payload.age} лет, рост: {payload.height_cm} см, вес: {payload.weight_kg} кг, ИМТ: {bmi}.\n"
+        f"Возраст: {payload.age} лет, рост: {payload.height_cm} см, вес: {payload.weight_kg} кг.\n"
+        f"Индекс массы тела (ИМТ): {bmi} — категория: '{bmi_status}'.\n"
         f"Уровень активности: {activity_str}.\n"
         f"Жалобы и особенности здоровья: {', '.join(complaints_list) if complaints_list else 'нет выраженных жалоб'}.\n"
         f"Цели занятий: {goals_str}.\n\n"
         f"Напиши персональное развёрнутое заключение (10–14 предложений): "
-        f"проанализируй текущий ИМТ и жалобы, похвали за стремление заниматься физкультурой, "
-        f"предложи оптимальные и безопасные направления (ходьба, плавание, ЛФК, скандинавская ходьба и т.д.) "
-        f"с учётом индивидуальных ограничений."
+        f"научно проанализируй ИМТ ({bmi} — {bmi_status}) и жалобы, похвали за стремление заниматься физкультурой, "
+        f"предложи оптимальные и безопасные направления нагрузок с учетом веса и суставов."
     )
 
     ai_summary = ask_gigachat(user_prompt, system_prompt, GIGACHAT_CREDENTIALS)
@@ -451,56 +466,61 @@ async def analyze_adult(payload: AdultPayload):
     if not ai_summary:
         ai_summary = (
             f"{short_name}, спасибо, что уделяешь внимание своему здоровью! "
-            f"С учётом твоих целей ({goals_str}) и текущего уровня активности я подобрал индивидуальный комплекс нагрузок, "
-            f"который поможет укрепить организм без перегрузок. "
-            f"{'При наличии жалоб обязательно проконсультируйся с врачом перед началом занятий.' if complaints_list else 'Начинай постепенно и следи за самочувствием.'}"
+            f"Твой ИМТ составляет {bmi} ({bmi_status}). "
+            f"С учётом этого показателя и целей ({goals_str}) я подобрал индивидуальный комплекс нагрузок, "
+            f"который поможет безопасно укрепить организм."
         )
 
-    # Динамическое формирование рекомендаций на основе жалоб и целей
     recommendations = []
-    recommendations.append({
-        "title": "Дозированная ходьба",
-        "desc": "30–45 минут ежедневно в умеренном темпе. Улучшает обмен веществ и работу сердца.",
-        "icon": "🚶",
-        "color": "#10b981"
-    })
+    
+    if bmi >= 25.0:
+        recommendations.append({
+            "title": "Интервальная ходьба и эллипс",
+            "desc": f"ИМТ {bmi} ({bmi_status}) требует бережного отношения к суставам. Начинайте с ходьбы и эллиптического тренажера.",
+            "icon": "🚶",
+            "color": "#10b981"
+        })
+        recommendations.append({
+            "title": "Плавание и аквааэробика",
+            "desc": "Водная среда полностью снимает осевую нагрузку с позвоночника и суставов при избыточном весе.",
+            "icon": "🏊",
+            "color": "#0077ff"
+        })
+    elif bmi < 18.5:
+        recommendations.append({
+            "title": "Умеренная силовая тренировка",
+            "desc": "При дефиците массы тела акцент делается на умеренные силовые упражнения для укрепления мышечного каркаса.",
+            "icon": "🏋️",
+            "color": "#0ea5e9"
+        })
+    else:
+        recommendations.append({
+            "title": "Дозированная кардионагрузка",
+            "desc": f"ИМТ {bmi} в пределах нормы. Поддерживайте активность регулярной ходьбой и фитнесом.",
+            "icon": "🏃",
+            "color": "#10b981"
+        })
 
     if payload.complaints.get("back") or "back" in payload.goals:
         recommendations.append({
             "title": "Лечебная физкультура (ЛФК) и кора",
-            "desc": "Специальные комплексы на укрепление глубоких мышц спины без ударной и осевой нагрузки.",
+            "desc": "Специальные комплексы на укрепление глубоких мышц спины без ударной нагрузки.",
             "icon": "🧘",
             "color": "#f59e0b"
-        })
-
-    if payload.complaints.get("joints") or payload.complaints.get("overweight") or "weight" in payload.goals:
-        recommendations.append({
-            "title": "Плавание и аквааэробика",
-            "desc": "Идеально разгружает суставы и позвоночник, эффективно сжигает калории.",
-            "icon": "🏊",
-            "color": "#0077ff"
         })
 
     if payload.complaints.get("pressure") or payload.complaints.get("headache") or "stress" in payload.goals:
         recommendations.append({
             "title": "Скандинавская ходьба",
-            "desc": "Задействует до 90% мышц тела, снижает артериальное давление и снимает стресс.",
+            "desc": "Нормализует давление, задействует до 90% мышц и эффективно снижает уровень стресса.",
             "icon": "🌲",
             "color": "#7c3aed"
         })
 
-    if len(recommendations) < 4 and ("endurance" in payload.goals or payload.activity_level == "low"):
-        recommendations.append({
-            "title": "Эллиптический тренажер / Велосипед",
-            "desc": "Мягкая кардионагрузка для развития выносливости в комфортном темпе.",
-            "icon": "🚴",
-            "color": "#0ea5e9"
-        })
-
     if len(recommendations) < 4:
         recommendations.append({
-            "title": "Суставная гимнастика и растяжка",
-            "desc": "Комплекс упражнений на мобильность суставов и эластичность связок.",
+            "title": "Суставная гимнастика",
+            "desc": "Комплекс упражнений на мобильность суставов, гибкость и улучшение подвижности.",
             "icon": "🤸",
             "color": "#64748b"
         })
@@ -508,6 +528,7 @@ async def analyze_adult(payload: AdultPayload):
     return JSONResponse(content={
         "status": "success",
         "bmi": bmi,
+        "bmi_status": bmi_status,
         "ai_text": ai_summary,
         "recommendations": recommendations[:5]
     })

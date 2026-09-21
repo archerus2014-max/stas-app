@@ -685,7 +685,7 @@ async function processAdultResults() {
 
             healthSummary.innerHTML = `
                 <div class="info-row"><span>Возраст:</span><b>${userAnswers.age} лет</b></div>
-                <div class="info-row"><span>ИМТ:</span><b>${data.bmi || "-"}</b></div>
+                <div class="info-row"><span>ИМТ:</span><b>${data.bmi || "-"} (${data.bmi_status || ""})</b></div>
                 <div class="info-row"><span>Активность:</span><b>${userAnswers.activity_level === 'low' ? 'Низкая' : userAnswers.activity_level === 'medium' ? 'Средняя' : 'Высокая'}</b></div>
                 <div class="info-row"><span>Жалобы:</span><b>${complaintsText}</b></div>
             `;
